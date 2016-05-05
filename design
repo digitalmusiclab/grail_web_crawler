@@ -1,0 +1,42 @@
+Master instance
+- postgres, port 5432
+- redis, port 6372
+- processes
+	- master process (ie. job logging, queue dashboard)
+	- worker:database_writer 
+	- worker:echonest x 2 (each w/unique api key w/per-worker token bucket)
+
+Worker instance(s)
+- spotify x 20 (single process/instance w/per-worker token bucket)
+
+
+
+Environment Variables
+- NODE_ENV: [development, production]
+- CRAWL_WORKER_TYPE: [Spotify, Echonest]
+- each spotify worker should have a unique identifier for accessing global token buckets from redis
+- each echonest worker (2 total), should know which EN api key to use
+
+
+
+TODO:
+
+- install ansible
+- make ansible playbook
+- setup security groups for ec2
+- provision ec2 instances
+- configure master server
+- configure ports, 3000=ui, 5432=pg(db_writer), 6372=redis(jobqueue/tokenbuckets)
+- install redis, postgres, git, zsh, node, pm2
+sudo apt-get install language-pack-en
+- install redis-stat, htop
+- transfer ssh-keys
+
+- MASTER t2.medium, 2vCPU, 2GBRAM
+- ports open = ssh, 8080-dashboard
+
+
+- DEVELOPMENT DEPENDENCIES
+ansible
+
+
