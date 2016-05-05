@@ -1,0 +1,16 @@
+---
+
+- name: Add Redis apt-repository
+  become: yes
+  apt_repository: repo='ppa:chris-lea/redis-server' state=present update_cache=yes
+
+- name: Install redis-server
+  become: yes
+  apt: name=redis-server state=present
+
+- name: Install Postgres
+  become: yes
+  apt: name={{ item }} state=present
+  with_items:
+    - postgresql
+    - postgresql-contrib

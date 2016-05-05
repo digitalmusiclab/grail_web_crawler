@@ -1,0 +1,15 @@
+---
+# Variables here are applicable to all host groups
+
+ansible_ssh_private_key_file: ~/.ssh/dml-cloud-ec2-access-portal.pem
+ansible_user: ubuntu
+
+repository: https://github.com/bennojoy/mywebapp.git
+iface: '{{ ansible_default_ipv4.interface }}'
+
+postgres_port: 5432
+postgres_user: ubuntu
+postgres_db_name: crawler
+postgres_db_password: mybadpassword
+
+redis_port: 6379
