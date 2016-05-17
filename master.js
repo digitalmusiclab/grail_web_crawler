@@ -1,3 +1,6 @@
+var env = process.env.NODE_ENV || "development";
+var kue_config = require("./config/secrets.js")[env].queue.kue;
+
 var Logger 	= require("./lib/Logger.js");
 var completed_jobs = 0;
 
@@ -6,9 +9,12 @@ Logger.info("Master Process Loaded");
 // Load Crawler Seed
 // require("./lib/CrawlSeeder.js");
 
+// Load Database Models
+require("./models/index.js");
+
 // Load Job Queue
 var kue 	= require("kue");
-var Queue 	= kue.createQueue({jobEvents: false});
+var Queue 	= kue.createQueue(kue_config);
 
 // Load Job Queue Web Interface
 kue.app.set('title', 'Spotify Crawler Dashboard');

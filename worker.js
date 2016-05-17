@@ -1,10 +1,10 @@
 var cluster 	= require('cluster');
-
 var JobQueue 	= require("./lib/JobQueue.js");
 var Logger 		= require("./lib/Logger.js");
 
-
-Logger.info("Worker Process #%d loaded", cluster.worker.id);
+if (cluster.worker) {
+	Logger.info("Worker Process #%d loaded", cluster.worker.id);
+}
 
 
 /*

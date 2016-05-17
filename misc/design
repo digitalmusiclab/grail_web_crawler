@@ -32,11 +32,10 @@ sudo apt-get install language-pack-en
 - install redis-stat, htop
 - transfer ssh-keys
 
+
 - MASTER t2.medium, 2vCPU, 2GBRAM
 - ports open = ssh, 8080-dashboard
 
 
 - DEVELOPMENT DEPENDENCIES
 ansible
-
-

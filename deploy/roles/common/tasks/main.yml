@@ -9,6 +9,14 @@
   become: yes
   apt: name=git state=present
 
+- name: Install Make via Build-Essential
+  become: yes
+  apt: name=build-essential state=present
+
+- name: Install Postgres Client Dependencies
+  become: yes
+  apt: name=libpq-dev state=present
+
 - name: Install NVM v0.31.0
   register: nodechange
   shell: >
@@ -22,4 +30,13 @@
     creates=/home/{{ ansible_user_id }}/.nvm/alias
 
 - name: Install PM2
-  npm: name=pm2 global=yes executable=/home/{{ ansible_user_id }}/.nvm/versions/node/v4.2.6/bin/npm state=present
+  npm: name=pm2 global=yes executable={{ npm_path }} state=present
+
+- name: Install node-gyp globally 
+  npm: name=node-gyp global=yes executable={{ npm_path }} state=present
+
+- name: Pull Grail Crawler Repo from github
+  git: repo={{ crawler_repository }} dest={{ crawler_path }} accept_hostkey=yes
+
+# - name: Install Grail Crawler NPM Project Dependencies
+#   npm: path={{ crawler_path }} executable={{ npm_path }}

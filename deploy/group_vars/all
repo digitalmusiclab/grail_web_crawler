@@ -4,8 +4,9 @@
 ansible_ssh_private_key_file: ~/.ssh/dml-cloud-ec2-access-portal.pem
 ansible_user: ubuntu
 
-repository: https://github.com/bennojoy/mywebapp.git
 iface: '{{ ansible_default_ipv4.interface }}'
+
+npm_path: /home/{{ ansible_user_id }}/.nvm/versions/node/v4.2.6/bin/npm
 
 postgres_port: 5432
 postgres_user: ubuntu
@@ -13,3 +14,7 @@ postgres_db_name: crawler
 postgres_db_password: mybadpassword
 
 redis_port: 6379
+
+crawler_repository: git://github.com/digitalmusiclab/grail_web_crawler.git
+crawler_name: grail_web_crawler
+crawler_path: /home/{{ ansible_user_id }}/{{ crawler_name }}
