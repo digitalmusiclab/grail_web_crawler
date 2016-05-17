@@ -11,15 +11,7 @@ sudo apt-get install zsh
 sudo sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
 
 #Install HTOP
-sudo apt-get install htop 
-
-# Install Redis
-sudo add-apt-repository ppa:chris-lea/redis-server
-sudo apt-get update
-sudo apt-get install redis-server
-
-# Install Postgres
-sudo apt-get install postgresql postgresql-contrib
+sudo apt-get install htop
 
 # Install NVM
 curl https://raw.githubusercontent.com/creationix/nvm/v0.31.0/install.sh | bash
@@ -32,3 +24,9 @@ nvm use 4.2.6
 
 #Install PM2
 npm install pm2 -g
+
+# Clone project repo
+git clone
+npm install grail_web_crawler/
+
+
