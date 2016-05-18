@@ -1,29 +1,30 @@
 {
-	"name": "spotify_crawler",
-	"version": "1.0.0",
-	"description": "",
-	"main": "app.js",
-	"dependencies": {
-		"async": "^2.0.0-rc.3",
-		"bluebird": "^3.3.5",
-		"kue": "^0.10.5",
-		"line-by-line": "^0.1.4",
-		"lodash": "^4.11.0",
-		"pg": "^4.5.3",
-		"pg-hstore": "^2.3.2",
-		"pg-native": "^1.10.0",
-		"promise": "^7.1.1",
-		"redis": "^2.6.0-1",
-		"request": "^2.71.0",
-		"rolling-rate-limiter": "^0.1.3",
-		"sequelize": "^3.21.0",
-		"tokenbucket": "^0.3.2",
-		"winston": "^2.2.0"
-	},
-	"devDependencies": {},
-	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
-	},
-	"author": "",
-	"license": "ISC"
+  "name": "spotify_crawler",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "dependencies": {
+    "async": "^2.0.0-rc.3",
+    "bluebird": "^3.3.5",
+    "kue": "^0.10.5",
+    "line-by-line": "^0.1.4",
+    "lodash": "^4.11.0",
+    "node-gyp": "^3.3.1",
+    "pg": "^4.5.3",
+    "pg-hstore": "^2.3.2",
+    "pg-native": "^1.10.0",
+    "promise": "^7.1.1",
+    "redis": "^2.6.0-1",
+    "request": "^2.71.0",
+    "rolling-rate-limiter": "^0.1.3",
+    "sequelize": "^3.21.0",
+    "tokenbucket": "^0.3.2",
+    "winston": "^2.2.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
 }
