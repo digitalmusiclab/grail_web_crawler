@@ -9,15 +9,14 @@ module.exports = {
 			},
 			postgres: {
 				database: "crawler",
-				host: "0.0.0.0",
 				port: 5432,
 				username: "crawl_worker",
 				password: "mybadpassword",
 				opts: {
+					host: "0.0.0.0",
 					dialect: "postgres",
 					logging: false
-				},
-				url: "postgres://kurtbradd:@localhost:5432/spotify"
+				}
 			}
 		},
 		queue: {
