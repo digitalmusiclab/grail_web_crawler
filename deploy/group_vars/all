@@ -18,3 +18,4 @@ redis_port: 6379
 crawler_repository: git://github.com/digitalmusiclab/grail_web_crawler.git
 crawler_name: grail_web_crawler
 crawler_path: /home/{{ ansible_user_id }}/{{ crawler_name }}
+crawler_config_path: {{ crawler_path }}/config/
