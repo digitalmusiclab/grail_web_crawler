@@ -1,0 +1,52 @@
+---
+# Send serets file with correct remote host config
+
+- name: Update apt packages
+  become: yes
+  apt: update_cache=yes
+
+- name: Upgrade apt
+  become: yes
+  apt: upgrade=yes
+
+- name: Install required apt packages
+  become: yes
+  apt: name={{ item }} state=installed
+  with_items:
+    - language-pack-en
+    - build-essential
+    - git
+    - zsh
+    - htop
+    - make
+    - g++
+
+- name: Install NVM v0.31.0
+  register: nodechange
+  shell: >
+    curl https://raw.githubusercontent.com/creationix/nvm/v0.31.0/install.sh | sh
+    creates=/home/{{ ansible_user_id }}/.nvm/nvm.sh
+
+- name: Install Node v4.2.6
+  when: nodechange.changed
+  shell: >
+    /bin/bash -c "source ~/.nvm/nvm.sh && nvm install 4.2.6 && nvm alias default 4.2.6"
+    creates=/home/{{ ansible_user_id }}/.nvm/alias
+
+- name: Install PM2
+  npm: name=pm2 global=yes executable={{ npm_path }} state=present
+
+- name: Install node-gyp globally 
+  npm: name=node-gyp global=yes executable={{ npm_path }} state=present
+
+- name: Pull Grail Crawler Repo from github
+  git: repo={{ crawler_repository }} dest={{ crawler_path }} accept_hostkey=yes
+
+- name: Install Grail Crawler NPM Project Dependencies
+  npm: path={{ crawler_path }} executable={{ npm_path }}
+
+- name: Transfer Server Secrets
+  template: src=secrets.js.j2 dest={{ crawler_config_path }}/secrets.js
+
+- name: Start Worker Process
+  command: "pm2 start {{crawler_path}}/worker.js"
