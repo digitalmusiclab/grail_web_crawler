@@ -35,7 +35,7 @@ var DatabaseWriter 	= require("./processors/DatabaseWriter.js");
 	@param {Function} - A process function invoked with job metadata, and completion callback.
 */
 JobQueue.process("database_writer", 1, DatabaseWriter.processJob);
-JobQueue.process("spotify_track_by_isrc", 1, Spotify.spotify_track_by_isrc);
+JobQueue.process("spotify_track_by_isrc", 8, Spotify.spotify_track_by_isrc);
 JobQueue.process("echonest_track_by_spotify_track", 1, Echonest.echonest_track_by_spotify_track);
 
 
