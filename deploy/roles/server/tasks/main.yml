@@ -20,6 +20,7 @@
     - htop
     - make
     - g++
+    - libpq-dev
 
 - name: Install NVM v0.31.0
   register: nodechange
@@ -40,13 +41,17 @@
   npm: name=node-gyp global=yes executable={{ npm_path }} state=present
 
 - name: Pull Grail Crawler Repo from github
-  git: repo={{ crawler_repository }} dest={{ crawler_path }} accept_hostkey=yes
+  git: repo={{ crawler_repository }} dest={{ crawler_path }} accept_hostkey=yes force=yes
 
 - name: Install Grail Crawler NPM Project Dependencies
-  npm: path={{ crawler_path }} executable={{ npm_path }}
+  command: "{{ npm_path }} install"
+  args:
+    chdir: "{{ crawler_path }}"
 
 - name: Transfer Server Secrets
   template: src=secrets.js.j2 dest={{ crawler_config_path }}/secrets.js
 
 - name: Start Worker Process
-  command: "pm2 start {{crawler_path}}/worker.js"
+  command: bash -c '. ~/.nvm/nvm.sh; pm2 start worker.js'
+  args:
+    chdir: "{{crawler_path}}"
