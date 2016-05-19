@@ -34,7 +34,7 @@ var DatabaseWriter 	= require("./processors/DatabaseWriter.js");
 	@param {Integer} - Processing Concurrency (how many jobs can be processed at once)
 	@param {Function} - A process function invoked with job metadata, and completion callback.
 */
-JobQueue.process("database_writer", 1, DatabaseWriter.processJob);
+JobQueue.process("database_writer", 8, DatabaseWriter.processJob);
 JobQueue.process("spotify_track_by_isrc", 8, Spotify.spotify_track_by_isrc);
 JobQueue.process("echonest_track_by_spotify_track", 1, Echonest.echonest_track_by_spotify_track);
 
