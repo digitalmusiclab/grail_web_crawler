@@ -5,6 +5,7 @@
   "main": "app.js",
   "dependencies": {
     "async": "^2.0.0-rc.3",
+    "aws-sdk": "^2.3.13",
     "bluebird": "^3.3.5",
     "kue": "^0.10.5",
     "line-by-line": "^0.1.4",
