@@ -26,7 +26,7 @@ exports.spotify_track_by_isrc = function (job, done) {
 
 
 	// Ask RateLimiter for time left before a request can be made
-	SpotifyRateLimiter("spotify_api", function (err, timeleft) {
+	SpotifyRateLimiter(process.pid, function (err, timeleft) {
 		
 		// If RateLimiter error, invoke callback with error
 		if (err) {
@@ -75,11 +75,11 @@ exports.spotify_track_by_isrc = function (job, done) {
 
 					});
 
-					// Dispatch new crawl job per track_id
-					Dispatch.dispatchCrawlJob({
-						namespace: "spotify:track",
-						id: track.track_id
-					});
+					// // Dispatch new crawl job per track_id
+					// Dispatch.dispatchCrawlJob({
+					// 	namespace: "spotify:track",
+					// 	id: track.track_id
+					// });
 
 				});
 
