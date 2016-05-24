@@ -1,0 +1,6 @@
+---
+
+- name: Stop Worker Process
+  command: bash -c '. ~/.nvm/nvm.sh; pm2 stop worker.js'
+  args:
+    chdir: "{{crawler_path}}"

@@ -1,0 +1,6 @@
+---
+
+- name: Start Worker Process
+  command: bash -c '. ~/.nvm/nvm.sh; pm2 start worker.js'
+  args:
+    chdir: "{{crawler_path}}"

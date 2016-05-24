@@ -1,5 +1,4 @@
 ---
-# Send serets file with correct remote host config
 
 - name: Update apt packages
   become: yes
