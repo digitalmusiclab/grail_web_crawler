@@ -4,10 +4,13 @@ var Request 	= require('request');
 var async 		= require('async');
 var _ 			= require('lodash');
 
-
-var EchonestRateLimiter = require("../lib/RateLimiter").Echonest;
+var EN_API_KEY 	= "DD1EDCULVNEMZDWBG";
 var echonest_api = "https://developer.echonest.com/api/v4/song/profile"
 
+var RateLimiter = require('limiter').RateLimiter;
+
+// API limiter set to 500 requests / minute
+var limiter = new RateLimiter(495, 'minute');
 
 /*
 	echonest_track_by_spotify_track
@@ -24,44 +27,35 @@ var echonest_api = "https://developer.echonest.com/api/v4/song/profile"
 exports.echonest_track_by_spotify_track = function (job, done) {
 
 
-	// Ask RateLimiter for time left before a request can be made
-	EchonestRateLimiter("echonest_api", function (err, timeleft) {
+	// Remove token from API limiter, callback invoked when
+	// token bucket has tokens available.
+	limiter.removeTokens(1, function (err, remainingRequests) {
 		
 		if (err) return done(err);
 
 		// Source Spotify Track ID from job metadata
 		var spotify_track_id = job.data.spotify_track_id;
-		
-		// Parse time left returned by RateLimiter
-		var time = parseInt(timeleft, 10);
-		var sleepTime = Math.max(time, 0);
 
+		// Query Echonest Song API with Spotify Track ID
+		echonest_track_query(spotify_track_id, function (err, songs) {
+			
+			// If Echonest API error, invoke callback with error
+			if (err) return done(err);
 
-		// Timeout execution until request can be made
-		setTimeout(function() {
+			// If no songs returned, invoke successful callback
+			if (!songs) return done();
 
-			// Query Echonest Song API with Spotify Track ID
-			echonest_track_query(spotify_track_id, function (err, songs) {
-				
-				// If Echonest API error, invoke callback with error
-				if (err) return done(err);
-
-				// If no songs returned, invoke successful callback
-				if (!songs) return done();
-
-				// Write Echonest Songs
-				Dispatch.dispatchWriteJob({
-					schema: "EchonestCrawl",
-					data: {
-						spotify_track_id: spotify_track_id,
-						songs: songs
-					}
-				});
-				
-				return done();
+			// Write Echonest Songs
+			Dispatch.dispatchWriteJob({
+				schema: "EchonestCrawl",
+				data: {
+					spotify_track_id: spotify_track_id,
+					songs: songs
+				}
 			});
-
-  		}, sleepTime);
+			
+			return done();
+		});
 	
 	})
 
@@ -85,7 +79,7 @@ var echonest_track_query = function (spotify_track_id, callback) {
 
 	// Query API Parameters
 	var query 	= "track_id=spotify:track:" + spotify_track_id;
-	var api 	= "api_key=DD1EDCULVNEMZDWBG"
+	var api 	= "api_key=" + EN_API_KEY;
 	var format 	= "format=json";
 	var buckets = echonest_buckets();
 
