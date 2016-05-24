@@ -8,6 +8,7 @@
     "aws-sdk": "^2.3.13",
     "bluebird": "^3.3.5",
     "kue": "^0.10.5",
+    "limiter": "^1.1.0",
     "line-by-line": "^0.1.4",
     "lodash": "^4.11.0",
     "node-gyp": "^3.3.1",
