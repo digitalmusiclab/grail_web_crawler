@@ -15,13 +15,22 @@ sudo apt-get install redis-server
 # Edit Redis conf to allow remote connections /etc/redis/redis.conf
 
 sudo -i -u 
+sudo -i -u 
+psql template1
 createdb crawler
 # create database crawler;
 # create user crawl_worker with password 'mybadpassword';
 # GRANT ALL ON DATABASE crawler to crawl_worker;
 # Edit /var/lib/pgsql/data/pg_hba.conf to allow remote auth
+## host all all 0.0.0.0/0 md5
 # Edit /etc/postgresql/9.1/main/postgresql.conf to allow remote connections
+## listen_address = '*'
+## max_connections = 400
+# Edit /etc/redis/redis.conf to bind on 0.0.0.0
+## bind 0.0.0.0
+
 # Reload postgresql service
+sudo service postgresql restart
 
 
 # Install NVM

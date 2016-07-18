@@ -2,7 +2,7 @@ module.exports = {
 	development: {
 		database: {
 			redis: {
-				host: "127.0.0.1",
+				host: "0.0.0.0",
 				port: 6379,
 				db: 0,
 				options: {}
@@ -25,7 +25,7 @@ module.exports = {
 				jobEvents: false,
 				disableSearch: true,
 				redis: {
-					host: "127.0.0.1",
+					host: "0.0.0.0",
 					port: 6379,
 					db: 0,
 					options: {}
