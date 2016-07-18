@@ -21,26 +21,26 @@
     - g++
     - libpq-dev
 
-- name: Install NVM v0.31.0
-  register: nodechange
-  shell: >
-    curl https://raw.githubusercontent.com/creationix/nvm/v0.31.0/install.sh | sh
-    creates=/home/{{ ansible_user_id }}/.nvm/nvm.sh
+# - name: Install NVM v0.31.0
+#   register: nodechange
+#   shell: >
+#     curl https://raw.githubusercontent.com/creationix/nvm/v0.31.0/install.sh | sh
+#     creates=/home/{{ ansible_user_id }}/.nvm/nvm.sh
 
-- name: Install Node v4.2.6
-  when: nodechange.changed
-  shell: >
-    /bin/bash -c "source ~/.nvm/nvm.sh && nvm install 4.2.6 && nvm alias default 4.2.6"
-    creates=/home/{{ ansible_user_id }}/.nvm/alias
+# - name: Install Node v4.2.6
+#   when: nodechange.changed
+#   shell: >
+#     /bin/bash -c "source ~/.nvm/nvm.sh && nvm install 4.2.6 && nvm alias default 4.2.6"
+#     creates=/home/{{ ansible_user_id }}/.nvm/alias
 
-- name: Install PM2
-  npm: name=pm2 global=yes executable={{ npm_path }} state=present
+# - name: Install PM2
+#   npm: name=pm2 global=yes executable={{ npm_path }} state=present
 
-- name: Install node-gyp globally 
-  npm: name=node-gyp global=yes executable={{ npm_path }} state=present
+# - name: Install node-gyp globally 
+#   npm: name=node-gyp global=yes executable={{ npm_path }} state=present
 
-- name: Pull Grail Crawler Repo from github
-  git: repo={{ crawler_repository }} dest={{ crawler_path }} accept_hostkey=yes force=yes
+# - name: Pull Grail Crawler Repo from github
+#   git: repo={{ crawler_repository }} dest={{ crawler_path }} accept_hostkey=yes force=yes
 
 - name: Install Grail Crawler NPM Project Dependencies
   command: "{{ npm_path }} install"
