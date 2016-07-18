@@ -7,7 +7,7 @@ module.exports = function(sequelize, DataTypes) {
 		},
 		songs: {
 			allowNull: true,
-			type: DataTypes.JSONB
+			type: DataTypes.JSON
 		}
 	},{
 		tableName: "EchonestCrawl",
