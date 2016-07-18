@@ -2,16 +2,16 @@
 # This playbook deploys the whole application stack in this site.  
 
 # Apply common configuration to all hosts
-# - hosts: all
-#   roles:
-#   - common
+- hosts: all
+  roles:
+  - common
 
 # Configure and deploy master.
-# - hosts: crawl-master
-#   roles:
-#   - database
+- hosts: crawl-master
+  roles:
+  - database
 
 # Configure and deploy worker.
-- hosts: crawl-worker-spotify
-  roles:
-  - server
+# - hosts: crawl-worker-spotify
+#   roles:
+#   - server

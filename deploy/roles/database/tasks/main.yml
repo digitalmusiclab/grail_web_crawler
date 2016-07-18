@@ -14,3 +14,8 @@
   with_items:
     - postgresql
     - postgresql-contrib
+
+- name: Start Worker Process
+  command: bash -c '. ~/.nvm/nvm.sh; pm2 start master.js'
+  args:
+    chdir: "{{crawler_path}}"
