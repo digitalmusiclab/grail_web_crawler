@@ -18,7 +18,6 @@ exports.processJob = function (job, done) {
 	var writer_schema 	= job.data.schema;
 	var writer_data 	= job.data.data;
 
-
 	// Use schema to decide how data is written
 	if (writer_schema == "SpotifyCrawl") {
 		return write_spotify_crawl(writer_data, done);
@@ -27,7 +26,31 @@ exports.processJob = function (job, done) {
 	if (writer_schema == "EchonestCrawl") {
 		return write_echonest_crawl(writer_data, done);
 	}
+
+	if (writer_schema == "SpotifyAlbumCrawl") {
+		return write_spotify_album_crawl(writer_data, done);
+	}
 }
+
+
+
+/*
+	write_spotify_album_crawl
+
+	@param {Object} data
+		- Object containing data to be written to database
+	@param {Function} done
+		- Callback function to be called after data is written.
+*/
+var write_spotify_album_crawl = function (data, done) {
+
+	db.SpotifyAlbumCrawl.create(data).then(function () {
+		return done();
+	}).catch(function (error) {
+		return done(error);
+	});
+}
+
 
 
 /*

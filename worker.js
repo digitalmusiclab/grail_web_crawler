@@ -19,6 +19,7 @@ if (cluster.worker) {
 	reschedule the job, or mark the job as failed.
 */
 var Spotify 		= require("./processors/Spotify.js");
+var SpotifyAlbum 	= require("./processors/SpotifyAlbum.js");
 var Echonest 		= require("./processors/Echonest.js");
 var DatabaseWriter 	= require("./processors/DatabaseWriter.js");
 
@@ -36,6 +37,7 @@ var DatabaseWriter 	= require("./processors/DatabaseWriter.js");
 */
 JobQueue.process("database_writer", 8, DatabaseWriter.processJob);
 JobQueue.process("spotify_track_by_isrc", 8, Spotify.spotify_track_by_isrc);
+JobQueue.process("spotify_album_by_spotify_album_ids", 8, SpotifyAlbum.spotify_album_by_spotify_album_ids);
 JobQueue.process("echonest_track_by_spotify_track", 1, Echonest.echonest_track_by_spotify_track);
 
 
