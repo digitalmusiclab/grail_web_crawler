@@ -1,0 +1,6 @@
+---
+
+# Apply common configuration to all hosts
+- hosts: crawl-worker-spotify
+  roles:
+  - common

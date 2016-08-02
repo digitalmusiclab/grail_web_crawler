@@ -12,6 +12,6 @@
   - database
 
 # Configure and deploy worker.
-# - hosts: crawl-worker-spotify
-#   roles:
-#   - server
+- hosts: crawl-worker-spotify
+  roles:
+  - server

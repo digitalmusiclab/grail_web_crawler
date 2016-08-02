@@ -1,2 +1,14 @@
 [crawl-master]
-master ansible_host=ec2-52-90-229-107.compute-1.amazonaws.com
+master ansible_host=
+
+[crawl-worker-spotify]
+crawl1  ansible_host=
+crawl2  ansible_host=
+crawl3  ansible_host=
+crawl4  ansible_host=
+crawl5  ansible_host=
+crawl6  ansible_host=
+crawl7  ansible_host=
+crawl8  ansible_host=
+crawl9  ansible_host=
+crawl10 ansible_host=
