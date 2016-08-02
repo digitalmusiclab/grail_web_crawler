@@ -1,5 +1,4 @@
 ---
-# This playbook deploys the whole application stack in this site.  
 
 # Configure and deploy worker.
 - hosts: crawl-worker-spotify

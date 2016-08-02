@@ -9,18 +9,6 @@
   become: yes
   apt: upgrade=yes
 
-# - name: Install Git
-#   become: yes
-#   apt: name=git state=present
-
-# - name: Install Make via Build-Essential
-#   become: yes
-#   apt: name=build-essential state=present
-
-# - name: Install Postgres Client Dependencies
-#   become: yes
-#   apt: name=libpq-dev state=present
-
 - name: Install required apt packages
   become: yes
   apt: name={{ item }} state=present
