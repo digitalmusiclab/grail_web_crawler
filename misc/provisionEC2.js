@@ -1,8 +1,7 @@
 var AWS = require('aws-sdk');
 
+
 AWS.config = new AWS.Config({
-	accessKeyId: 'AKIAIIMT6OWF3GRQTWXA',
-	secretAccessKey: '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',
 	region: 'us-east-1'
 });
 
@@ -10,8 +9,8 @@ var ec2 = new AWS.EC2();
 
 var ec2_params = {
 	ImageId: 'ami-fce3c696',
-	MaxCount: 6,
-	MinCount: 6,
+	MaxCount: 10,
+	MinCount: 10,
 	BlockDeviceMappings: [{
 		DeviceName: "/dev/sda1",
 		Ebs: {
