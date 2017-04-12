@@ -8,7 +8,7 @@ var _ 			= require('lodash');
 // Load RateLimiter for Spotify API
 var SpotifyRateLimiter = require("../lib/RateLimiter").Spotify;
 // var music_brainz_release_api = "http://musicbrainz.org/ws/2/release";
-var music_brainz_release_api = "http://localhost:5000/ws/2/release"
+var music_brainz_release_api = "http://52.90.229.107:8080/ws/2/release/"
 
 
 
@@ -55,7 +55,13 @@ exports.musicbrainz_release_by_spotify_artist_album = function (job, done) {
 				if (err) return done(err);
 
 				// If no metadata returned, invoke successful callback
-				if (!album_metadata) return done();
+				if (! album_metadata) return done();
+
+				const release_count = album_metadata["release-list"].count;
+
+				if ( parseInt(release_count, 10) < 1) {
+					return done();
+				}
 
 				// Write Spotify Albums
 				Dispatch.dispatchWriteJob({

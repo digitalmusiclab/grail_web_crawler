@@ -22,6 +22,7 @@ var Spotify 		= require("./processors/Spotify.js");
 var SpotifyAlbum 	= require("./processors/SpotifyAlbum.js");
 var Echonest 		= require("./processors/Echonest.js");
 var DatabaseWriter  = require("./processors/DatabaseWriter.js");
+var MBRelease 		= require("./processors/MBRelease.js");
 var MBReleaseSPAlbum = require("./processors/MBReleaseSPAlbum.js");
 
 
@@ -41,6 +42,7 @@ JobQueue.process("spotify_track_by_isrc", 8, Spotify.spotify_track_by_isrc);
 JobQueue.process("spotify_album_by_spotify_album_ids", 8, SpotifyAlbum.spotify_album_by_spotify_album_ids);
 JobQueue.process("echonest_track_by_spotify_track", 1, Echonest.echonest_track_by_spotify_track);
 JobQueue.process("mb_release_by_sp_artist_album", 8, MBReleaseSPAlbum.musicbrainz_release_by_spotify_artist_album);
+JobQueue.process("mb_release_by_mb_release_id", 1, MBRelease.mb_release_by_mb_release_id);
 
 
 /*

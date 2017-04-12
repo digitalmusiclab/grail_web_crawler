@@ -16,14 +16,35 @@ var kue_params = {
 
 var Queue = kue.createQueue(kue_params);
 
+// Queue.failed(function (err, ids) {
+// 	ids.forEach(function (id) {
+// 		kue.Job.get(id, function (err, job) {
+// 			if (err) {
+// 				return console.error(err);
+// 			}
+// 			job.inactive();
+// 		})
+// 	})
+// })
+
 Queue.active(function (err, ids) {
 	ids.forEach(function (id) {
 		kue.Job.get(id, function (err, job) {
 			if (err) {
 				return console.error(err);
 			}
-			console.log(job);
 			job.inactive();
 		})
 	})
 })
+
+// Queue.delayed(function (err, ids) {
+// 	ids.forEach(function (id) {
+// 		kue.Job.get(id, function (err, job) {
+// 			if (err) {
+// 				return console.error(err);
+// 			}
+// 			job.inactive();
+// 		})
+// 	})
+// })
