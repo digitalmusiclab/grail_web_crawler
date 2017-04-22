@@ -7,6 +7,7 @@
     "async": "2.3.0",
     "aws-sdk": "2.42.0",
     "bluebird": "3.5.0",
+    "command-line-args": "4.0.3",
     "kue": "0.11.5",
     "limiter": "1.1.0",
     "line-by-line": "0.1.5",
