@@ -27,7 +27,7 @@ exports = module.exports = function getTracksByIsrc(isrc, callback) {
       },
       uri: 'search'
     },
-    function getTracksResponse(error, response, body) {
+    (error, response, body) => {
       // Spotify reported an error, return it
       if (error) {
         return callback(error);

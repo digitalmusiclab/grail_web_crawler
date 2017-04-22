@@ -18,9 +18,9 @@ kue.app.set('title', 'Spotify Crawler Dashboard');
 kue.app.listen(process.env.KUE_PORT || 3000);
 
 // Thread shutdown procedure
-function shutdownProcedure(signal) {
+function shutdownProcedure() {
   Logger.info('Queue shutting down');
-  Queue.shutdown(5000, function onShutdown(error) {
+  Queue.shutdown(5000, (error) => {
     if (error) {
       Logger.error('Queue shutdown error: ', error);
     }
@@ -33,14 +33,18 @@ process.on('SIGTERM', shutdownProcedure);
 process.on('SIGINT', shutdownProcedure);
 
 // Log queue level events
-Queue.on('job complete', function jobComplete(id, result) {
+Queue.on('job complete', (id) => {
   Logger.info('Completed job: %d, Total completed: %d', id, ++completedJobs);
 });
 
-Queue.on('job failed', function jobFailed(id, result) {
+Queue.on('job failed', (id, result) => {
   Logger.error('Job: ', id, ' failed with result: ', result);
 });
 
-Queue.on('error', function jobError(error) {
+Queue.on('error', (error) => {
   Logger.error('Queue error: ', error);
 });
+
+// Master is setup and ready to go, parse the options for the crawl job to do
+const options = require('./config/options.config');
+require(options.crawler);
