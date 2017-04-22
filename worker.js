@@ -43,7 +43,7 @@ const MBReleaseSPAlbum = require('./processors/MBReleaseSPAlbum.js');
  * 3. {function} - How the job will be processed
  */
 JobQueue.process('database_writer', 8, DatabaseWriter.processJob);
-JobQueue.process('spotify_track_by_isrc', 8, Spotify.spotify_track_by_isrc);
+JobQueue.process('spotify_track_by_isrc', 8, Spotify.trackByIsrc);
 JobQueue.process(
   'spotify_album_by_spotify_album_ids',
   8,
