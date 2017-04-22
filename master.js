@@ -1,50 +1,46 @@
-var env = process.env.NODE_ENV || "development";
-var kue_config = require("./config/secrets.js")[env].queue.kue;
+'use strict';
 
-var Logger 	= require("./lib/Logger.js");
-var completed_jobs = 0;
+// Load dependencies
+const secrets = require('./config/secrets');
+const kueConfiguration = secrets[process.env.NODE_ENV || 'development'].queue.kue;
 
-Logger.info("Master Process Loaded");
+const Logger = require('./lib/Logger.js');
+let completedJobs = 0;
 
-// Load Crawler Seed
-// require("./lib/CrawlSeeder.js");
+Logger.info('Master process loaded');
 
-// Load Database Models
-require("./models/index.js");
+// Load job queue
+const kue = require('kue');
+const Queue = kue.createQueue(kueConfiguration);
 
-// Load Job Queue
-var kue 	= require("kue");
-var Queue 	= kue.createQueue(kue_config);
-
-// Load Job Queue Web Interface
+// Load job queue web interface
 kue.app.set('title', 'Spotify Crawler Dashboard');
-kue.app.listen(3000);
+kue.app.listen(process.env.KUE_PORT || 3000);
 
-
-// Thread Shutdown Procedure
-var shutdown_procedure = function (sig) {
-	Logger.info("Queue shutting down...");
-	Queue.shutdown(5000, function (err) {
-		if (err) Logger.error('Kue shutdown: ', err);
-		process.exit(0);
-	});
+// Thread shutdown procedure
+function shutdownProcedure(signal) {
+  Logger.info('Queue shutting down');
+  Queue.shutdown(5000, function onShutdown(error) {
+    if (error) {
+      Logger.error('Queue shutdown error: ', error);
+    }
+    process.exit(0);
+  });
 }
 
+// Process failure events
+process.on('SIGTERM', shutdownProcedure);
+process.on('SIGINT', shutdownProcedure);
 
-// Process Failure Events
-process.on('SIGTERM', shutdown_procedure);
-process.on('SIGINT', shutdown_procedure);
-
-
-// Log Queue Level Events
-Queue.on('job complete', function (id, result) {
-	Logger.info('Completed Job: %d, Total Completed: %d', id, ++completed_jobs);
+// Log queue level events
+Queue.on('job complete', function jobComplete(id, result) {
+  Logger.info('Completed job: %d, Total completed: %d', id, ++completedJobs);
 });
 
-Queue.on('job failed', function (id, result) {
-	Logger.error("Job: ", id, " failed with result: ", result);
+Queue.on('job failed', function jobFailed(id, result) {
+  Logger.error('Job: ', id, ' failed with result: ', result);
 });
 
-Queue.on('error', function (err) {
-	Logger.error("Queue Error: ", err);
+Queue.on('error', function jobError(error) {
+  Logger.error('Queue error: ', error);
 });
