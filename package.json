@@ -24,9 +24,11 @@
     "winston": "2.3.1"
   },
   "devDependencies": {
+    "eslint": "3.19.0",
     "nodemon": "1.11.0"
   },
   "scripts": {
+    "lint": "eslint .",
     "start": "nodemon app"
   },
   "author": "Digital Music Lab",
