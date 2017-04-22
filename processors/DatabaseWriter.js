@@ -1,6 +1,4 @@
 var Logger = require("../lib/Logger.js");
-var db = require("../models/index.js");
-
 
 /*
 	Process Job
