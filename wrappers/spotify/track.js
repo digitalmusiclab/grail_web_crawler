@@ -9,7 +9,7 @@ const _ = require('lodash');
  */
 exports = module.exports = class SpotifyTrack {
   /**
-   * Constructs and instance of `SpotifyTrack`.
+   * Constructs an instance of `SpotifyTrack`.
    * 
    * @param {object} data - Payload from the Spotify API to convert into `SpotifyTrack`
    * @param {object[]} data.artists - List of artists associated with the track
@@ -25,11 +25,13 @@ exports = module.exports = class SpotifyTrack {
    */
   constructor(data) {
     this.artists = _.map(data.artists, artist => ({ id: artist.id, name: artist.name }));
-    this.album = {
-      id: data.album.id,
-      name: data.album.name
-    };
-    this.isrc = data.external_ids.isrc;
+    if (typeof data.album === 'object') {
+      this.album = {
+        id: data.album.id,
+        name: data.album.name
+      };
+    }
+    this.externalIds = data.external_ids;
     this.track = {
       id: data.id,
       name: data.name
