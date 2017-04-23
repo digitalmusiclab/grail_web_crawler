@@ -16,23 +16,26 @@ const SpotifyAlbum = require('./../album');
  * @return {void}
  */
 exports = module.exports = function getAlbumById(id, callback) {
-  request({
-    baseUrl,
-    uri: `albums/${id}`
-  }, (error, response, body) => {
-    // Spotify returned an error, return it
-    if (error) {
-      return callback(error);
-    }
+  request(
+    {
+      baseUrl,
+      uri: `albums/${id}`
+    },
+    (error, response, body) => {
+      // Spotify returned an error, return it
+      if (error) {
+        return callback(error);
+      }
 
-    let data = null;
-    try {
-      data = JSON.parse(body);
-    } catch (error) {
-      // Could not parse the response, it was not well-formed JSON
-      return callback(error);
-    }
+      let data = null;
+      try {
+        data = JSON.parse(body);
+      } catch (error) {
+        // Could not parse the response, it was not well-formed JSON
+        return callback(error);
+      }
 
-    return callback(null, new SpotifyAlbum(data));
-  });
+      return callback(null, new SpotifyAlbum(data));
+    }
+  );
 };
