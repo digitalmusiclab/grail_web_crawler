@@ -26,9 +26,9 @@ exports.trackByIsrc = function trackByIsrc(job, done) {
 
     // Make sure that the ISRC is stored in the job metadata
     const isrc = job.data.isrc;
-		if (typeof isrc !== 'string') {
-			return done('spotify.trackByIsrc: no isrc provided');
-		}
+    if (typeof isrc !== 'string') {
+      return done('spotify.trackByIsrc: no isrc provided');
+    }
 
     // Parse time left returned by rate limiter
     const time = Number.parseInt(timeleft, 10);
@@ -39,19 +39,19 @@ exports.trackByIsrc = function trackByIsrc(job, done) {
       spotify.getTracksByIsrc(isrc, (error, tracks) => {
         // If the API responds with an error, fail the job
         if (error) {
-					return done(error);
-				}
+          return done(error);
+        }
 
         // No tracks were returned.  This is okay, just indicate we are done.
         if (!tracks) {
-					return done();
-				}
+          return done();
+        }
 
-				// TODO: Write to wherever this data is needed.  We no longer write to a
-				// secondary database so this data needs a home.
-				for (const track of tracks) {
-					Logger.info('spotify.trackByIsrc: track returned', track);
-				}
+        // TODO: Write to wherever this data is needed.  We no longer write to a
+        // secondary database so this data needs a home.
+        for (const track of tracks) {
+          Logger.info('spotify.trackByIsrc: track returned', track);
+        }
 
         return done();
       });
