@@ -44,11 +44,8 @@ const MBReleaseSPAlbum = require('./processors/MBReleaseSPAlbum.js');
  */
 JobQueue.process('database_writer', 8, DatabaseWriter.processJob);
 JobQueue.process('spotify_track_by_isrc', 8, Spotify.trackByIsrc);
-JobQueue.process(
-  'spotify_album_by_spotify_album_ids',
-  8,
-  SpotifyAlbum.spotify_album_by_spotify_album_ids
-);
+JobQueue.process('spotify_album_by_spotify_album_id', 8, SpotifyAlbum.albumBySpotifyAlbumId);
+JobQueue.process('spotify_album_by_spotify_album_ids', 8, SpotifyAlbum.albumsBySpotifyAlbumIds);
 JobQueue.process('echonest_track_by_spotify_track', 1, Echonest.echonest_track_by_spotify_track);
 JobQueue.process(
   'mb_release_by_sp_artist_album',
