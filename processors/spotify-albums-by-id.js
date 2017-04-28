@@ -1,11 +1,11 @@
 'use strict';
 
 // Load dependencies
-const Logger = require('../lib/Logger.js');
+const Logger = require('../lib/logger');
 
 // Load the Spotify wrapper and rate limiter
 const spotify = require('./../wrappers/spotify/api');
-const SpotifyRateLimiter = require('../lib/RateLimiter').Spotify;
+const SpotifyRateLimiter = require('../lib/rate-limiter').Spotify;
 
 /**
  * Queries for Spotify albums from the API given a list of Spotify identifiers.

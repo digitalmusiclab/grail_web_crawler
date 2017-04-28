@@ -4,7 +4,7 @@
 const secrets = require('./config/secrets');
 const kueConfiguration = secrets[process.env.NODE_ENV || 'development'].queue.kue;
 
-const Logger = require('./lib/Logger.js');
+const Logger = require('./lib/logger');
 let completedJobs = 0;
 
 Logger.info('Master process loaded');

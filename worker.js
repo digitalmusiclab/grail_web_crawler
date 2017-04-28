@@ -2,8 +2,8 @@
 
 // Load dependencies
 const cluster = require('cluster');
-const JobQueue = require('./lib/JobQueue.js');
-const Logger = require('./lib/Logger.js');
+const JobQueue = require('./lib/job-queue');
+const Logger = require('./lib/logger');
 
 if (cluster.worker) {
   Logger.info('Worker process #%d loaded', cluster.worker.id);

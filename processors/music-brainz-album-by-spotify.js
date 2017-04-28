@@ -1,12 +1,12 @@
 'use strict';
 
 // Load dependencies
-const Logger = require('../lib/Logger.js');
+const Logger = require('../lib/logger');
 const MusicBrainzAlbum = require('./../wrappers/music-brainz/album');
 
 // Load RateLimiter for Spotify API
 const musicBrainz = require('./../wrappers/music-brainz/api');
-const rateLimiter = require('./../lib/RateLimiter').MusicBrainz;
+const rateLimiter = require('./../lib/rate-limiter').MusicBrainz;
 
 /**
  * Queries the Music Brains API for album metadata given the name of the artist

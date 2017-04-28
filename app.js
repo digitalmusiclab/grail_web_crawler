@@ -9,7 +9,7 @@ if (cluster.isMaster) {
   for (let cpu = 0; cpu < cpuTotal; cpu++) {
     cluster.fork();
   }
-  require('./master.js');
+  require('./master');
 } else {
-  require('./worker.js');
+  require('./worker');
 }
