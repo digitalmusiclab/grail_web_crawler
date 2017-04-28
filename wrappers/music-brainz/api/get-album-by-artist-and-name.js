@@ -7,7 +7,8 @@ const baseUrl = require('./base-url');
 /**
  * Given name of an artist and album, searches the Music Brainz API for an album
  * with that information.  Returns the metadata that the API finds, or an error
- * if nothing is found matching the query.
+ * if nothing is found matching the query.  Since multiple albums can match the
+ * query, an array of albums are returned.
  * 
  * @param {string} artist - The name of the artist to search for the associated album
  * @param {string} albumName - The name of the album to search for
@@ -17,11 +18,14 @@ exports = module.exports = function getAlbumByArtistAndName(artist, albumName, c
   request(
     {
       baseUrl,
+      headers: {
+        'User-Agent': 'Grail/0.1.0 ( baronemda@gmail.com )'
+      },
       qs: {
         fmt: 'json',
         query: `${albumName} AND artist:${artist}`
       },
-      uri: 'albums'
+      uri: 'release'
     },
     (error, response, body) => {
       // Spotify returned an error, return it
@@ -42,7 +46,7 @@ exports = module.exports = function getAlbumByArtistAndName(artist, albumName, c
         return callback(data.error);
       }
 
-      return data;
+      return callback(null, data.releases);
     }
   );
 };
