@@ -16,7 +16,7 @@ const SpotifyRateLimiter = require('../lib/rate-limiter').Spotify;
  * 
  * @return {void}
  */
-exports.trackByIsrc = function trackByIsrc(job, done) {
+exports = module.exports = function trackByIsrc(job, done) {
   // Ask rate limiter for time left before a request can be made
   SpotifyRateLimiter(process.pid, (error, timeleft) => {
     // If rate limiter reports an error, invoke callback with error

@@ -19,7 +19,7 @@ const rateLimiter = require('./../lib/rate-limiter').MusicBrainz;
  * @param {string} job.data.spotifyAlbum - The name of the album on Spotify
  * @param {function} done - Called with an error if one occurs
  */
-exports.releaseBySpotifyArtistAndAlbum = function releaseBySpotifyArtistAndAlbum(job, done) {
+exports = module.exports = function releaseBySpotifyArtistAndAlbum(job, done) {
   rateLimiter(process.pid, (error, timeLeft) => {
     // Rate limiter reported an error, exit immediately
     if (error) {
