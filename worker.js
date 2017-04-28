@@ -23,10 +23,9 @@ if (cluster.worker) {
  * as the first argument to the callback. Passing an error will notify the JobQueue 
  * to either reschedule the job, or mark the job as failed.
  */
-const Spotify = require('./processors/Spotify.js');
-const SpotifyAlbum = require('./processors/SpotifyAlbum.js');
-const DatabaseWriter = require('./processors/DatabaseWriter.js');
-const MBReleaseSPAlbum = require('./processors/MBReleaseSPAlbum.js');
+const spotify = require('./processors/spotify-tracks-by-isrc');
+const spotifyAlbum = require('./processors/spotify-albums-by-id');
+const musicBrainzAlbum = require('./processors/music-brainz-album-by-spotify');
 
 /**
  * JobQueue Router
@@ -41,12 +40,11 @@ const MBReleaseSPAlbum = require('./processors/MBReleaseSPAlbum.js');
  * 2. {number} - How many jobs of this type can be processed at once
  * 3. {function} - How the job will be processed
  */
-JobQueue.process('database_writer', 8, DatabaseWriter.processJob);
-JobQueue.process('spotify_track_by_isrc', 8, Spotify.trackByIsrc);
-JobQueue.process('spotify_album_by_spotify_album_id', 8, SpotifyAlbum.albumBySpotifyAlbumId);
-JobQueue.process('spotify_album_by_spotify_album_ids', 8, SpotifyAlbum.albumsBySpotifyAlbumIds);
+JobQueue.process('spotify:trackByIsrc', 8, spotify.trackByIsrc);
+JobQueue.process('spotify:albumBySpotifyAlbumId', 8, spotifyAlbum.albumBySpotifyAlbumId);
+JobQueue.process('spotify:albumsBySpotifyAlbumIds', 8, spotifyAlbum.albumsBySpotifyAlbumIds);
 JobQueue.process(
-  'mb_release_by_sp_artist_album',
+  'mb:releaseBySpotifyArtistAndAlbum',
   8,
-  MBReleaseSPAlbum.releaseBySpotifyArtistAndAlbum
+  musicBrainzAlbum.releaseBySpotifyArtistAndAlbum
 );
