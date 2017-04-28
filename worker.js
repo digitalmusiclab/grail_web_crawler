@@ -48,5 +48,5 @@ JobQueue.process('spotify_album_by_spotify_album_ids', 8, SpotifyAlbum.albumsByS
 JobQueue.process(
   'mb_release_by_sp_artist_album',
   8,
-  MBReleaseSPAlbum.musicbrainz_release_by_spotify_artist_album
+  MBReleaseSPAlbum.releaseBySpotifyArtistAndAlbum
 );
