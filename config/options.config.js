@@ -4,10 +4,7 @@
 const commandLineArguments = require('command-line-args');
 const fs = require('fs');
 
-const definitions = [
-  { name: 'crawler', type: String },
-  { name: 'data-file', type: String }
-];
+const definitions = [{ name: 'crawler', type: String }, { name: 'data-file', type: String }];
 const options = commandLineArguments(definitions);
 
 // Validate that the crawler file exists
