@@ -3,6 +3,7 @@
 // Load dependencies
 const request = require('request');
 const baseUrl = require('./base-url');
+const headers = require('./headers');
 
 /**
  * Given name of an artist and album, searches the Music Brainz API for an album
@@ -18,9 +19,7 @@ exports = module.exports = function getAlbumByArtistAndName(artist, albumName, c
   request(
     {
       baseUrl,
-      headers: {
-        'User-Agent': 'Grail/0.1.0 ( baronemda@gmail.com )'
-      },
+      headers,
       qs: {
         fmt: 'json',
         query: `${albumName} AND artist:${artist}`
