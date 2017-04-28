@@ -8,5 +8,4 @@ exports.spotify_critera_match = function (job, done) {
 			Dispatch.createGraiInsertJob(...)
 		}
 	*/
-
 }
