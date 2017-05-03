@@ -23,14 +23,8 @@ if (cluster.worker) {
  * as the first argument to the callback. Passing an error will notify the JobQueue 
  * to either reschedule the job, or mark the job as failed.
  */
-const spotify = {
-  albumById: require('./processors/spotify-albums-by-ids'),
-  albumsByIds: require('./processors/spotify-album-by-id'),
-  tracksByIsrc: require('./processors/spotify-tracks-by-isrc')
-};
-const musicBrainz = {
-  albumBySpotifyArtistAndAlbum: require('./processors/music-brainz-album-by-spotify')
-};
+const Spotify = require('./processors/spotify');
+const MusicBrainz = require('./processors/spotify');
 
 /**
  * JobQueue Router
@@ -45,7 +39,6 @@ const musicBrainz = {
  * 2. {number} - How many jobs of this type can be processed at once
  * 3. {function} - How the job will be processed
  */
-JobQueue.process('spotify:trackByIsrc', 8, spotify.trackByIsrc);
-JobQueue.process('spotify:albumBySpotifyAlbumId', 8, spotify.albumById);
-JobQueue.process('spotify:albumsBySpotifyAlbumIds', 8, spotify.albumsByIds);
-JobQueue.process('mb:releaseBySpotifyArtistAndAlbum', 8, musicBrainz.albumBySpotifyArtistAndAlbum);
+JobQueue.process('spotify:trackByIsrc', 8, Spotify.trackByIsrc);
+JobQueue.process('spotify:albumBySpotifyAlbumId', 8, Spotify.albumById);
+JobQueue.process('spotify:albumsBySpotifyAlbumIds', 8, Spotify.albumsByIds);
