@@ -19,6 +19,7 @@
     "redis": "2.7.1",
     "request": "2.81.0",
     "rolling-rate-limiter": "0.1.5",
+    "fast-levenshtein": "^2.0.6",
     "sequelize": "3.30.4",
     "tokenbucket": "0.3.2",
     "winston": "2.3.1"
