@@ -6,28 +6,29 @@ const baseUrl = require('./base-url');
 const headers = require('./headers');
 
 /**
- * Given name of an artist and album, searches the Music Brainz API for an album
- * with that information.  Returns the metadata that the API finds, or an error
- * if nothing is found matching the query.  Since multiple albums can match the
- * query, an array of albums are returned.
+ * Given name of an artist and release, searches the MusicBrainz API for releases
+ * with that information.  Returns metadata from release(s) that the API finds, 
+ * or an error if nothing is found matching the query. Since multiple releases 
+ * can match the query, an array of releases are returned.
  * 
- * @param {string} artist - The name of the artist to search for the associated album
- * @param {string} albumName - The name of the album to search for
- * @param {function} callback - Called with the album metadata or an error
+ * @param {string} artistName - The name of the artist to search for the associated release
+ * @param {string} albumName - The name of the release to search for
+ * @param {function} callback - Called with found releases or an error
  */
-exports = module.exports = function getAlbumByArtistAndName(artist, albumName, callback) {
+exports = module.exports = function getReleaseByArtistAndName(artistName, albumName, callback) {
   request(
     {
       baseUrl,
       headers,
       qs: {
         fmt: 'json',
-        query: `${albumName} AND artist:${artist}`
+        query: `${albumName} AND artist:${artistName}`
       },
       uri: 'release'
     },
     (error, response, body) => {
-      // Spotify returned an error, return it
+
+      // MusicBrainz returned an error, return it
       if (error) {
         return callback(error);
       }

@@ -1,3 +1,4 @@
 'use strict';
 
-exports.getAlbumByArtistAndName = require('./get-album-by-artist-and-name');
+exports.getReleaseById = require('./get-release-by-id');
+exports.getReleaseByArtistAndName = require('./get-release-by-artist-and-name');
