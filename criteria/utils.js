@@ -11,5 +11,12 @@ const Levenshtein = require('fast-levenshtein');
     @param {string} str2 - String to be compared
 */
 exports.stringDistance = (str1, str2) => {
-    return Levenshtein.get(str1, str2, { useCollator: true });
+    const maxLength = Math.max(str1.lenght, str2.length);
+    const levDistance = Levenshtein.get(str1, str2, { useCollator: true });
+    return levDistance/maxLength;
+}
+
+exports.average = (arr) => {
+    const sum = arr.reduce((acc, val) => acc + val, 0);
+    return sum / arr.length;
 }

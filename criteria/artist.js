@@ -17,8 +17,12 @@ exports = module.exports = function criteriaScore(source, compare) {
     
     // Critera Scores
     const criteria_artist_name = utils.stringDistance(source.name, compare.name);
-    const criteria_artist_release_count = (min_count/max_count).toFixed(2);
+    const criteria_artist_cardinality = (min_count/max_count).toFixed(2);
+
+    // Overall Critera Scores
+    const scores = [criteria_artist_name, criteria_artist_cardinality]
+    const criteria_overall = utils.average(scores);
 
     // Return Critera Scores
-    return { criteria_artist_name, criteria_artist_release_count };
+    return { criteria_artist_name, criteria_artist_cardinality, criteria_overall };
 }

@@ -1,5 +1,8 @@
 module.exports = {
   development: {
+    keys: {
+      lastfm: "b9e05b386939dbca75c553f6bdceebc1"
+    },
     database: {
       redis: {
         host: '0.0.0.0',
