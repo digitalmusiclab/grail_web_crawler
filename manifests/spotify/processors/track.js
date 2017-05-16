@@ -70,7 +70,6 @@ exports = module.exports = function process(job, done) {
                 return done(null, { insertedTracks, updatedTracks });
             })
             .catch( (error) => {
-                console.error(error);
                 return done(error);
             });
         }
