@@ -9,13 +9,12 @@ require("dotenv-safe").config({
 
 // Load dependencies
 require("./lib/root-require")();
-
 const commandLineArguments = require('command-line-args');
 const Dispatch = rootRequire('lib/dispatch');
 const LineReader = require('line-by-line');
 const Logger = rootRequire('lib/logger');
-const Manifest = rootRequire('manifests');
 const fs = require('fs');
+
 
 // Command Line Definitions
 const options = commandLineArguments([
@@ -39,9 +38,10 @@ if (!fs.existsSync(options.seed)) {
     throw new Error('options: seed file not found');
 }
 
+// Locate the seed loader to use
 const [crawl_api, crawl_entity] = options.namespace.split(":");
-
 const loaderPath = `./manifests/${crawl_api}/loaders/${crawl_entity}.js`
+
 
 // Validate that the seed loader file exists
 if (!fs.existsSync(loaderPath)) {
@@ -75,23 +75,32 @@ reader.on('line', (line) => {
         jobMetadata = loader.lineParser(line);
     } 
     catch (error) {
-        Logger.error('seeder.line.error: ', error);
+        // Logger.error('seeder.line.error: ', error);
         errorJobCount += 1;
         return;
     }
-    
+
     // Dispatch Single Job
-    if (typeof jobMetadata == 'object') {
+    if (jobMetadata.constructor === Object) {
         Dispatch.dispatchCrawlJob(jobMetadata);
         dispatchedJobCount += 1;
     }
-
+    
     // Dispatch Multiple Jobs
-    if (typeof jobMetadata == 'array') {
+    if (jobMetadata.constructor === Array) {
         jobMetadata.forEach(Dispatch.dispatchCrawlJob);
         dispatchedJobCount += jobMetadata.length;
     }
-    
+
+    // Print summary every 10k lines
+    if (totalJobCount % 10000 == 0) {
+        Logger.info('----------------------------------------');
+        Logger.info('seeder.report: Shutdown Report');
+        Logger.info('seeder.report: %d Jobs Read', totalJobCount);
+        Logger.info('seeder.report: %d Jobs With Parsing Errors', errorJobCount);
+        Logger.info('seeder.report: %d Jobs Dispatched', dispatchedJobCount);
+        Logger.info('----------------------------------------');
+    } 
 });
 
 // Problem reading the data file, exit with an error
@@ -106,4 +115,5 @@ reader.on('end', () => {
     Logger.info('seeder.shutdown: %d Jobs Read', totalJobCount);
     Logger.info('seeder.shutdown: %d Jobs With Parsing Errors', errorJobCount);
     Logger.info('seeder.shutdown: %d Jobs Dispatched', dispatchedJobCount);
+    process.exit(0);
 });

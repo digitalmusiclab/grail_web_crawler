@@ -32,9 +32,8 @@ if (cluster.worker) {
  * to either reschedule the job, or mark the job as failed.
  */
 
-const LastFm = rootRequire('manifests/lastfm/processors');
-const Spotify = rootRequire('manifests/spotify/processors');
 const MusicBrainz = rootRequire('manifests/musicbrainz/processors');
+const SpotifyProcessor = rootRequire('manifests/spotify/processors');
 
 
 /**
@@ -51,17 +50,12 @@ const MusicBrainz = rootRequire('manifests/musicbrainz/processors');
  * 3. {function} - How the job will be processed
  */
 
-// Spotify Processors
-JobQueue.process('spotify:track', 1, Spotify.Track);
-JobQueue.process('spotify:artist', 1, Spotify.Artist);
-JobQueue.process('spotify:release', 1, Spotify.Release);
-
 // MusicBrainz Processors
 JobQueue.process('musicbrainz:track', 1, MusicBrainz.Track);
 JobQueue.process('musicbrainz:artist', 1, MusicBrainz.Artist);
 JobQueue.process('musicbrainz:release', 1, MusicBrainz.Release);
 
-// // Last.fm Processors
-JobQueue.process('lastfm:track', 1, LastFm.Track);
-JobQueue.process('lastfm:artist', 1, LastFm.Artist);
-JobQueue.process('lastfm:release', 1, LastFm.Release);
+// Spotify Processors
+JobQueue.process('spotify:track', 1, SpotifyProcessor.Track);
+JobQueue.process('spotify:artist', 1, SpotifyProcessor.Artist);
+JobQueue.process('spotify:release', 1, SpotifyProcessor.Release);

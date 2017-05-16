@@ -44,7 +44,10 @@ process.on('SIGINT', shutdownProcedure);
 
 
 // Log queue level events
-Queue.on('job complete', (id) => {
+Queue.on('job complete', (id, result) => {
+  // if (result) {
+  //   Logger.info(`Job ${id} Result: ${JSON.stringify(result)}`);
+  // }
   Logger.info('Completed job: %d, Total completed: %d', id, ++completedJobs);
 });
 
