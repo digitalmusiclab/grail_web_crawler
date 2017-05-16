@@ -2,23 +2,14 @@
 
 // Load dependencies
 const _ = require('lodash');
-const SpotifyTrack = require('./track');
 
 
+exports = module.exports = class MixRadioArtist {
 
-/**
- * Composes a Spotify album from the API.  Contains information about the album
- * itself, the id, tracks and artists associated with it.
- */
-exports = module.exports = class LastFmArtist {
+    constructor(data) {
+        this.id = data.mr_artist_id;
+        this.name = data.mr_artist_name;
+        this.cardinality = data.mr_artist_cardinality;
+    }
 
-
-  /**
-   * Constructs an instance of `SpotifyAlbum`.
-   * 
-   * @param {object} data - Payload from the Spotify API to convert into `SpotifyAlbum`
-   * @param {string} data.tracks[].name - Name of the track
-   */
-  constructor(data) {}
-  
 };
