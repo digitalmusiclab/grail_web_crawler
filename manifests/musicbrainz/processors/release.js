@@ -5,30 +5,32 @@ const Logger = rootRequire('lib/logger');
 const MusicBrainz = require('./../api');
 const RateLimiter = rootRequire('lib/rate-limiter').MusicBrainz;
 const MixRadioRelease = rootRequire('manifests/mixradio/models').Release;
-const ReleaseCriteria = rootRequire('criteria/release');
+const ReleaseCriteriaMatch = rootRequire('criteria/release');
+const QueryHelper = rootRequire("lib/queries");
+const db = rootRequire("lib/database");
 const _ = require("lodash");
 
 /*
-    job.data = {
-        mr_release_id: 1321422,
-        mr_release_name: "I Should Coco",
-        mr_release_cardinality: "13",
-        mr_artist_id: "10055880",
-        mr_artist_name: "Remember Me Soundtrack",
-        mr_release_tracks: [{
-            "mr_track_id": "1321455",
-            "mr_track_name": "Lenny"
-            "mr_track_position": "6",
-            "mb_track_id": "NULL",
-            "mb_release_id": "NULL"
-        }]
-    }
+    Job Data JSON Object
+    ===================================
+    mr_release_id: 1321422,
+    mr_release_name: "I Should Coco",
+    mr_release_cardinality: "13",
+    mr_artist_id: "10055880",
+    mr_artist_name: "Remember Me Soundtrack",
+    mb_release_id: "NULL",
+    mr_release_tracks: [{
+        "mr_track_id": "1321455",
+        "mr_track_name": "Lenny",
+        "mr_track_position": "6",
+        "mb_track_id": "NULL"
+    }]
+    ===================================
 */
 
 exports = module.exports = function process(job, done) {
 
     const mixradioRelease = new MixRadioRelease(job.data);
-    
 
     RateLimiter(process.pid, (error, timeLeft) => {
 
@@ -37,42 +39,20 @@ exports = module.exports = function process(job, done) {
             return done(error);
         }
 
-        // Request Completion Handler
-        const requestCompletionHandler = function (error, data) {
-
-            // Unable to retrieve the metadata (could be rate limit)
-            if (error) {
-                Logger.info('musicbrainz.release: failed', error);
-                return done(error);
-            }
-
-            // There is no metadata, we are done
-            if (!data) {
-                return done();
-            }
-
-            // Serialize metadata into a `MusicBrainzRelease` and log
-            // const album = new MusicBrainzRelease(data);
-            Logger.info('musicbrainz.release: ', data);
-
-            return done();
-        }
-
-
         // Send Request To MusicBrainz API
         const sendRequest = function () {
-            getReleases(job.data)
-            .then( (release) => {
-
-                if (!release) {
-                    return Promise.reject();
-                }
-                // compute criteria score
+            
+            getMusicBrainzReleases(job.data)
+            .then(parseReleaseData)
+            .then( (musicbrainzReleases) => {
+                return updateGrailWithReleases(mixradioRelease, musicbrainzReleases);
+            })
+            .catch( (result) => {
+                return done(null, result);
             })
             .catch( (error) => {
                 return done(error);
             });
-
         }
 
 
@@ -85,71 +65,68 @@ exports = module.exports = function process(job, done) {
 };
 
 
+/* Returns a promise to fetch MusicBrainz release data */
+const getMusicBrainzReleases = (data) => {
+    
+    if (data.mb_release_id) {
+        return getReleaseById(data.mb_release_id);
+    }
 
-const getReleases = (data) => {
+    return getReleaseByName(data.mr_release_name, data.mr_artist_name);
+}
 
-    return Promise.resolve().then( () => {
-        
-        if (data.mb_release_id) {
-            return getReleaseById(id);
-        }
 
-        return getReleaseByName(data.mr_release_name, data.mr_artist_name);
-    })
-    .then( (releaseData) => {
+/* Parse Musicbrainz Release(s) into an Array of releases  */
+const parseReleaseData = (releaseData) => {
 
-        if (typeof releaseData == 'array') {
-            return releaseData;
-        }
-
-        if (typeof releaseData == 'object') {
-            return [releaseData];
-        }
-
+    if (!releaseData) {
         return Promise.reject(null);
-    });
-    .then( (releases) => {
-        return updateGrailWithReleases()
-    });
+    }
+    
+    if (releaseData.constructor === Array) {
+        return Promise.resolve(releaseData);
+    }
+
+    if (releaseData.constructor == Object) {
+        return Promise.resolve([releaseData]);
+    }
+
+    return Promise.reject(new Error("MusicBrainz Release Data: Incorrect Data Type. Must be Array or Object"));
 }
 
 
+/* Sequentially update Grail with returned MusicBrainz Releases */
+const updateGrailWithReleases = (mr_release, musicbrainz_releases) => {
 
-const updateGrailWithReleases = (mixradio_release, musicbrainz_releases) => {
+    let promise = Promise.resolve();
 
+    _.each(musicbrainz_releases, (mb_release) => {
+
+        promise = promise.then( () => {
+            return updateGrailWithRelease(mr_release, mb_release)
+        });
+
+    });
+
+    return promise;
 }
+
 
 const updateGrailWithRelease = (mr_release, mb_release) => {
+    
+    // Start database transaction
+    return db.transaction( (trx) => {
 
-    const criteriaScore = ReleaseCriteria.criteriaScore(mr_release, mb_release);
+        const releasePromise = findAndUpdateOrCreateMusicBrainzRelease(mr_release, mb_release, trx);
+        const artistPromise = findAndUpdateOrCreateMusicBrainzArtist(mr_release, mb_release, trx);
 
-    const releasePromise = checkReleaseCount(mr_release.id, mb_release.id)
-        .then( (count) => {
-            if (count > 0) {
-                return updateRelease(mr_release.id, mb_release.id, criteriaScore);
-            }
-            return insertRelease(mb_release.id, criteriaScore);
-        });
-
-    const artistPromise = checkArtistCount(mr_release.artist_id, mb_release.artist_id)
-        .then( (count) => {
-            if (count == 0) {
-                return updateArtist(mr_release.artist_id, mb_release.artist_id);
-            }
-            return insertArtist(mb_release.artist_id);
-        });
-
-    return Promise.all([releasePromise, artistPromise])
-        .then( ([grail_release_id, grail_artist_id]) => {
-
-            if (releaseResult &&) {
-                return updateTrack(grail_release_id, grail_artist_id, mr_track_ids);
-            }
-
-        });
+        return Promise.all([releasePromise, artistPromise])
+            .then( ([grail_release_ids, grail_artist_ids]) => {
+                const mr_track_ids = _.map(mr_release.tracks, "id");
+                return insertTrackIntoGrail(grail_release_ids, grail_artist_ids, mr_track_ids, trx);
+            });
+    });   
 }
-
-
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -195,62 +172,35 @@ const getReleaseByName = (releaseName, artistName) => {
 
         return Promise.all(releasePromises);
     });
-
 }
-
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Release: Check / Update / Insert
 //////////////////////////////////////////////////////////////////////////////////////////
 
-const checkReleaseCount = (mixradio_release_id, musicbrainz_release_id) => {
+const findAndUpdateOrCreateMusicBrainzRelease = (mr_release, mb_release, trx) => {
 
-    return knex("grail_release")
-        .where(function() {
-          this.where('musicbrainz_release_id', musicbrainz_release_id).orWhereNull("musicbrainz_release_id")
-        })
-        .andWhere("mixradio_release_id", mixradio_release_id)
-        .count("*");
-}
+    const releaseCriteria = ReleaseCriteriaMatch(mr_release, mb_release);
 
+    const queryParams = {
+        grail_table: "grail_release",
+        grail_table_unique_attribute: "grail_release_id",
+        grail_constraint_attribute: "mixradio_release_id",
+        grail_constraint_value: mr_release.id,
+        new_attributes: {
+            musicbrainz_release_id: mb_release.id,
+            musicbrainz_release_criteria: JSON.stringify(releaseCriteria)
+        },
+        find_constraint_attribute: "musicbrainz_release_id",
+        find_constraint_value: mb_release.id,
+        insert_constraint_distinct_columns: [
+            "spotify_release_id", "spotify_release_criteria",
+            "mixradio_release_id", "mixradio_release_name", "mixradio_release_cardinality"
+        ]
+    };
 
-const updateRelease = (mixradio_release_id, musicbrainz_release_id, musicbrainz_release_criteria) => {
-
-    musicbrainz_release_criteria = JSON.stringify(musicbrainz_release_criteria);
-
-    return knex("grail_release")
-        .where(function() {
-          this.where('musicbrainz_release_id', musicbrainz_release_id).orWhereNull("musicbrainz_release_id")
-        })
-        .andWhere("mixradio_release_id", mixradio_release_id)
-        .update({ musicbrainz_release_id, musicbrainz_release_criteria });
-}
-
-
-const insertRelease = (mixradio_release_id, musicbrainz_release_id, musicbrainz_release_criteria) => {
-
-    musicbrainz_release_criteria = JSON.stringify(musicbrainz_release_criteria);
-
-    // Distinct columns to merge with new attributes for insert into Grail Release
-    const distinctColumns = [
-        "spotify_release_id", "spotify_release_criteria",
-        "mixradio_release_id", "mixradio_release_name", "mixradio_release_cardinality"
-    ];
-
-    return knex("grail_release")
-    .distinct(distinctColumns)
-    .where('mixradio_release_id', mixradio_release_id)
-    .then( (distinctReleases) => {
-        // Merge Distinct Attributes with new MusicBrainz Attributes
-        return _.map(distinctReleases, (release) => {
-            return _.merge(release, { musicbrainz_release_id, musicbrainz_release_criteria });
-        });
-    })
-    .then( (newReleases) => {
-        const chunkSize = newReleases.length;
-        return knex.batchInsert('grail_release', newReleases, chunkSize);
-    });
+    return QueryHelper.findAndUpdateorCreateGrailEntity(queryParams, trx);
 }
 
 
@@ -258,76 +208,100 @@ const insertRelease = (mixradio_release_id, musicbrainz_release_id, musicbrainz_
 // Artist: Check / Update / Insert
 //////////////////////////////////////////////////////////////////////////////////////////
 
+const findAndUpdateOrCreateMusicBrainzArtist = (mr_release, mb_release, trx) => {
 
-const checkArtistCount = (mixradio_artist_id, musicbrainz_artist_id) => {
-    
-    const sql = `
-    SELECT count(*) 
-    FROM grail_release as gr, grail_artist as ga, grail_track 
-    WHERE ga.mixradio_artist_id = "${mixradio_artist_id}" 
-    AND ga.musicbrainz_artist_id != "${musicbrainz_artist_id}" 
-    AND gt.grail_artist_id = ga.grail_artist_id 
-    AND gt.grail_release_id = gr.grail_release_id;
-    `
+    const queryParams = {
+        grail_table: "grail_artist",
+        grail_table_unique_attribute: "grail_artist_id",
+        grail_constraint_attribute: "mixradio_artist_id",
+        grail_constraint_value: mr_release.artist_id,
+        new_attributes: { 
+            musicbrainz_artist_id: mb_release.artist_id
+        },
+        find_constraint_attribute: "musicbrainz_artist_id",
+        find_constraint_value: mb_release.artist_id,
+        insert_constraint_distinct_columns: [
+            "spotify_artist_id",
+            "spotify_artist_name",
+            "facebook_artist_id",
+            "digital7_US_artist_id",
+            "digital7_UK_artist_id",
+            "digital7_AU_artist_id",
+            "openaura_artist_id",
+            "musixmatch_WW_artist_id",
+            "jambase_artist_id",
+            "fma_artist_id",
+            "seatgeek_artist_id",
+            "seatwave_artist_id",
+            "lyricfind_US_artist_id",
+            "rdio_artist_id",
+            "echonest_artist_id",
+            "twitter_artist_id",
+            "tumblr_artist_id",
+            "mixradio_artist_id",
+            "mixradio_artist_name",
+            "mixradio_artist_cardinality"
+        ]
+    };
 
-    return knex.raw(sql);
+    return QueryHelper.findAndUpdateorCreateGrailEntity(queryParams, trx);
 }
 
 
+//////////////////////////////////////////////////////////////////////////////////////////
+// Track: Insert
+//////////////////////////////////////////////////////////////////////////////////////////
 
-/*
-    Returns an array of grail_artist_ids for the Artist rows that have been updated
+/*  
+    If a new artist or release inserted, we must insert into Grail Track with the new grail ids for artist, and release
+    for all tracks with the original mixradio_release_id used to crawl.
+
+    @param { string } grail_release_ids - Grail Release IDs of inserted Releases
+    @param { string } grail_artist_ids - Grail Artist IDs of inserted Artists
+    @param { string } mr_track_ids - MixRadio Track ID related to new Release and Artist inserts
 */
-const updateArtist = (mixradio_artist_id, musicbrainz_artist_id) => {
+const insertTrackIntoGrail = (grail_release_ids, grail_artist_ids, mr_track_ids, trx) => {
 
-    return knex.transaction( (trx) => {
-
-        return trx("grail_artist")
-        .select(["grail_artist_id"])
-        .where("mixradio_artist_id", mixradio_artist_id)
-        .pluck("grail_artist_id")
-        .then( (grail_artist_ids) => {
-            return trx("grail_artist")
-                .update("musicbrainz_artist_id", musicbrainz_artist_id)
-                .whereIn('grail_artist_id', grail_artist_ids)
-                .then(() => grail_artist_ids);
-        })
+    // Create Unique Release Artist Pairs
+    let artistReleaseIdPairs = [];
+    _.each(grail_release_ids, (grail_release_id) => {
+        _.each(grail_artist_ids, (grail_artist_id) => {
+            artistReleaseIdPairs.push({ grail_release_id, grail_artist_id });
+        });
     });
-}
 
+    // Distinct Columns To Copy From Grail Track When Inserting A New Track
+    const distinctTrackColumns = [
+        "isrc",
+        "spotify_track_id",
+        "spotify_track_name",
+        "spotify_track_criteria",
+        "musicbrainz_track_id",
+        "echonest_track_id",
+        "lyricfind_US_track_id",
+        "musixmatch_track_id",
+        "mixradio_track_id",
+        "mixradio_track_name",
+        "mixradio_track_position",
+        "msd_track_id"
+    ]
 
-/*
-    Returns the newly inserted Grail Artist ID
-*/
-const insertArtist = (musicbrainz_artist_id) => {
+    return trx("grail_track")
+        .distinct(distinctTrackColumns)
+        .whereIn('mixradio_track_id', mr_track_ids)
+        .then( (distinctTracks) => {
 
-    const createdDate = new Date()
+            let insertTracks = [];
+            _.each(distinctTracks, (track) => {
+                _.each(artistReleaseIdPairs, (idPair) => {
+                    insertTracks.push(_.merge(track, idPair));
+                });
+            });
 
-    const sql = `
-    INSERT INTO grail_artist(musicbrainz_artist_id,createdat_artist,spotify_artist_id,spotify_artist_name,spotify_artist_criteria,facebook_artist_id,digital7_US_artist_id,digital7_UK_artist_id,digital7_AU_artist_id,openaura_artist_id,musixmatch_WW_artist_id,jambase_artist_id,fma_artist_id,seatgeek_artist_id,seatwave_artist_id,lyricfind_US_artist_id,rdio_artist_id,echonest_artist_id,twitter_artist_id,tumblr_artist_id,musicbrainz_artist_criteria,mixradio_artist_id,mixradio_artist_name,mixradio_artist_cardinality,lastfm_artist_id,lastfm_artist_criteria) 
-    SELECT DISTINCT "${musicbrainz_artist_id}", "${createdDate}",spotify_artist_id,spotify_artist_name,spotify_artist_criteria,facebook_artist_id,digital7_US_artist_id,digital7_UK_artist_id,digital7_AU_artist_id,openaura_artist_id,musixmatch_WW_artist_id,jambase_artist_id,fma_artist_id,seatgeek_artist_id,seatwave_artist_id,lyricfind_US_artist_id,rdio_artist_id,echonest_artist_id,twitter_artist_id,tumblr_artist_id,musicbrainz_artist_criteria,mixradio_artist_id,mixradio_artist_name,mixradio_artist_cardinality,lastfm_artist_id,lastfm_artist_criteria 
-    FROM grail_artist;
-    SELECT max(grail_artist_id) FROM grail.grail_artist;
-    `
-    
-    return knex.raw(sql);
-}
-
-
-//////////////////////////////////////////////////////////////////////////////////////////
-// Track: Update
-//////////////////////////////////////////////////////////////////////////////////////////
-
-const updateTrack = (grail_release_id, grail_artist_id, mr_artist_id, mr_track_ids) => {
-
-    const sql = `
-    INSERT INTO grail.grail_track(grail_release_id,grail_artist_id,musicbrainz_track_id,isrc,spotify_track_id,spotify_track_name,spotify_track_criteria,musicbrainz_track_id,musicbrainz_track_criteria2,echonest_track_id,lyricfind_US_track_id,musixmatch_track_id,mixradio_track_id,mixradio_track_name,mixradio_track_position,msd_track_id,lastfm_track_id,lastfm_track_criteria,createdat_track) 
-    SELECT DISTINCT "${grail_release_id}", "${grail_artist_id}",gt.musicbrainz_track_id,gt.isrc,gt.spotify_track_id,gt.spotify_track_name,gt.spotify_track_criteria,gt.musicbrainz_track_id,gt.musicbrainz_track_criteria2,gt.echonest_track_id,gt.lyricfind_US_track_id,gt.musixmatch_track_id,gt.mixradio_track_id,gt.mixradio_track_name,gt.mixradio_track_position,gt.msd_track_id,gt.lastfm_track_id,gt.lastfm_track_criteria,gt.createdat_track 
-    FROM grail.grail_track as gt, grail.grail_artist as ga 
-    WHERE gt.mixradio_track_id IN (${mr_track_ids}) 
-    AND ga.mixradio_artist_id = ${mr_artist_id} 
-    AND ga.grail_artist_id = gt.grail_artist_id;
-    `
-
-    return knex.raw(sql);
+            return insertTracks;
+        })
+        .then( (newTracks) => {
+            const chunkSize = newTracks.length;
+            return trx.batchInsert('grail_track', newTracks, chunkSize);
+        });
 }

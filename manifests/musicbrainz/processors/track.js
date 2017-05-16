@@ -127,16 +127,16 @@ const updateRelease = (mixradio_track_id, musicbrainz_track_id, musicbrainz_trac
     return db('grail_track')
         .where("mixradio_track_id", mixradio_track_id)
         .update("musicbrainz_track_id", musicbrainz_track_id)
-        .update("musicbrainz_track_criteria2", JSON.stringify(musicbrainz_track_criteria));
+        .update("musicbrainz_track_criteria", JSON.stringify(musicbrainz_track_criteria));
 }
 
 
 const insertRelease = (mixradio_track_id, musicbrainz_track_id, musicbrainz_track_criteria) => {
 
-    const criteraJsonString = JSON.stringify(musicbrainz_artist_criteria);
+    const criteraJsonString = JSON.stringify(musicbrainz_track_criteria);
 
     const sql = `
-    INSERT INTO grail_track(musicbrainz_track_id,musicbrainz_track_criteria2,grail_artist_id,grail_release_id,isrc,spotify_track_id,spotify_track_name,spotify_track_criteria,echonest_track_id,lyricfind_US_track_id,musixmatch_track,mixradio_track_id,mixradio_track_name,mixradio_track_position,msd_track_id,lastfm_track_id,lastfm_track_criteria) 
+    INSERT INTO grail_track(musicbrainz_track_id,musicbrainz_track_criteria,grail_artist_id,grail_release_id,isrc,spotify_track_id,spotify_track_name,spotify_track_criteria,echonest_track_id,lyricfind_US_track_id,musixmatch_track,mixradio_track_id,mixradio_track_name,mixradio_track_position,msd_track_id,lastfm_track_id,lastfm_track_criteria) 
     SELECT DISTINCT "${musicbrainz_track_id}","${criteraJsonString}",grail_artist_id,grail_release_id,isrc,spotify_track_id,spotify_track_name,spotify_track_criteria,echonest_track_id,lyricfind_US_track_id,musixmatch_track,mixradio_track_id,mixradio_track_name,mixradio_track_position,msd_track_id,lastfm_track_id,lastfm_track_criteria 
     FROM grail.grail_track 
     WHERE mixradio_track_id = "${mixradio_track_id}";

@@ -11,19 +11,21 @@ const _ = require("lodash");
     query the MusicBrainz Release API.
 
 
-    Data Columns = mr_release_id | RELEASE_TRACKS_JSON
-    where,
-    RELEASE_TRACKS_JSON = [{
-        "mr_track_id":"1321455",
-        "mr_track_name":"Lenny"
-        "position":"6",
-        "mr_release_name":"I Should Coco",
-        "mr_release_cardinality":"13",
-        "mr_artist_id":"10055880",
-        "mr_artist_name":"Remember Me Soundtrack",
-        "mb_release_id":"NULL",
-        "mb_track_id":"NULL",
+    SCRIPT Data Columns
+    ===================================
+    mr_release_id: 1321422,
+    mr_release_name: "I Should Coco",
+    mr_release_cardinality: "13",
+    mr_artist_id: "10055880",
+    mr_artist_name: "Remember Me Soundtrack",
+    mb_release_id: "NULL",
+    mr_release_tracks: [{
+        "mr_track_id": "1321455",
+        "mr_track_name": "Lenny",
+        "mr_track_position": "6",
+        "mb_track_id": "NULL"
     }]
+    ===================================
 */
 
 
@@ -37,7 +39,12 @@ const lineParser = (line) => {
 
     let data = {
         mr_release_id: attrs[0],
-        mr_release_tracks: JSON.parse(attrs[1])
+        mr_release_name: attrs[1],
+        mr_release_cardinality: attrs[2],
+        mr_artist_id: attrs[3],
+        mr_artist_name: attrs[4],
+        mb_release_id: attrs[5],
+        mr_release_tracks: JSON.parse(attrs[6])
     }
 
     return { namespace, data };
