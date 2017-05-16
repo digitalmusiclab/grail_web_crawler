@@ -1,5 +1,12 @@
 'use strict';
 
+/* Load Environment Variables */
+require("dotenv-safe").config({
+    path: `./config/.env.${process.env.NODE_ENV || 'development'}`,
+    sample: "./config/.env.requirements",
+    silent: true
+});
+
 // Load dependencies
 require("./lib/root-require")();
 
