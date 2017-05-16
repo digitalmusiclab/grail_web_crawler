@@ -3,39 +3,40 @@
 // Load dependencies
 const request = require('request');
 const baseUrl = require('./base-url');
+const SpotifyRelease = require("./../models/release");
 
-/**
- * Requests information for an album from the Spotify API and returns it to the
- * caller when the request is completed.  Serializes the album into a
- * `SpotifyAlbum` class.
- * 
- * @param {string} id - The identifier of the album to query from Spotify
- * @param {function} callback - The function to call when done
- * 
- * @return {void}
- */
-exports = module.exports = function getReleaseId(id, callback) {
 
-  const requestParams = {
-    baseUrl,
-    uri: `albums/${id}`
-  }
 
-  request(requestParams, (error, response, body) => {
-      
-      if (error) {
-        return callback(error);
-      }
+exports = module.exports = function getById(id) {
 
-      let data = null;
-      try {
-        data = JSON.parse(body);
-      } 
-      catch (error) {
-        return callback(error);
-      }
+    return new Promise( (resolve, reject) => {
 
-      return callback(null, data);
-    }
-  );
+        const requestParams = {
+            baseUrl,
+            uri: `albums/${id}`
+        }
+
+        request(requestParams, (error, response, body) => {
+                
+                if (error) {
+                    return reject(error);
+                }
+
+                let data = null;
+                try {
+                    data = JSON.parse(body);
+                } 
+                catch (error) {
+                    return reject(error);
+                }
+
+                if (!data) {
+                    return reject(null);
+                }
+
+                return resolve(new SpotifyRelease(data));
+            }
+        );
+
+    });
 };

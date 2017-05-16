@@ -2,57 +2,71 @@
 
 // Load dependencies
 const Logger = rootRequire('lib/logger');
-const spotify = require('./../api');
-const SpotifyRateLimiter = rootRequire('lib/rate-limiter').Spotify;
+const SpotifyApi = require('./../api');
+const RateLimiter = rootRequire('lib/rate-limiter').Spotify;
+const MixRadioRelease = rootRequire('manifests/mixradio/models').Release;
+const ReleaseCriteriaMatch = rootRequire("criteria/release");
+const db = rootRequire("lib/database");
+const _ = require("lodash");
 
-/**
- * Queries for a Spotify track from the API given an ISRC.
- * 
- * @param {object} job - The job that was contains all of the required data
- * @param {string} job.data.isrc - The ISRC to query for the track with
- * @param {function} done - Called when done or if there is an error
- * 
- * @return {void}
- */
-exports = module.exports = function trackByIsrc(job, done) {
-  // Ask rate limiter for time left before a request can be made
-  SpotifyRateLimiter(process.pid, (error, timeleft) => {
-    // If rate limiter reports an error, invoke callback with error
-    if (error) {
-      return done(error);
+
+/*
+    Job Data = {
+        sp_realease_id: "123abc",
+        mr_release_id: "abc_easy_as_123",
+        mr_release_name: "12345",
+        mr_release_cardinality: 12,
+        mr_release_tracks: [{
+            "mr_track_id": "12342", 
+            "mr_track_name": "Sabotage",
+            "mr_track_position": "5"
+        }]
     }
+*/
+exports = module.exports = function process(job, done) {
 
-    // Make sure that the ISRC is stored in the job metadata
-    const isrc = job.data.isrc;
-    if (typeof isrc !== 'string') {
-      return done('spotify.trackByIsrc: no isrc provided');
-    }
+    const { sp_realease_id } = job.data;
 
-    // Parse time left returned by rate limiter
-    const time = Number.parseInt(timeleft, 10);
-    const sleepTime = Math.max(time, 0);
+    const mr_release = new MixRadioRelease(job.data);
 
-    // Timeout execution until request can be made
-    return setTimeout(() => {
-      spotify.getTracksByIsrc(isrc, (error, tracks) => {
-        // If the API responds with an error, fail the job
+
+    RateLimiter(process.pid, (error, timeLeft) => {
+
         if (error) {
-          return done(error);
+            return done(error);
         }
 
-        // No tracks were returned.  This is okay, just indicate we are done.
-        if (!tracks) {
-          return done();
+        const sendRequest = function () {
+
+            SpotifyApi.Release.getById(sp_realease_id)
+            .then( (sp_release) => {
+                return updateGrailRelease(mr_release, sp_release);
+            })
+            .then( () => {
+                return done();
+            })
+            .catch( (error) => {
+                return done(error);
+            });
         }
 
-        // TODO: Write to wherever this data is needed.  We no longer write to a
-        // secondary database so this data needs a home.
-        for (const track of tracks) {
-          Logger.info('spotify.trackByIsrc: track returned', track);
-        }
+        // Respect the rate limit before making the request
+        const time = Number.parseInt(timeLeft, 10);
+        const sleepTime = Math.max(time, 0);
 
-        return done();
-      });
-    }, sleepTime);
-  });
+        return setTimeout(sendRequest, sleepTime);
+    });
 };
+
+
+const updateGrailRelease = (mr_release, sp_release) => {
+
+    const criteriaJson = ReleaseCriteriaMatch(mr_release, sp_release);
+
+    const spotify_release_criteria = JSON.stringify(criteriaJson);
+
+    return knex("grail_release")
+        .where('mixradio_release_id', mr_release.id)
+        .andWhere('spotify_release_id', sp_release.id)
+        .update({ spotify_release_criteria });
+} 

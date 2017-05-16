@@ -1,7 +1,7 @@
 -- CHECKS Spotify ARTIST DATA
 	-- Gets Spotify Artist IDs with Spotify ID
 	-- API Parameters: spotify artist IDs (when available)
-	-- API REQUEST: https://api.spotify.com/v1/artists/spotify_artist
+	-- API REQUEST: https://api.spotify.com/v1/artists/spotify_artist_id/album
 	-- Manifest Columns = mixradio_artist_ID | ARTIST JSON
 		-- JSON track format = [ {"mr_artist_name": "Chingy", "cardinality": "69", "sp_artist_id": "123asc}, ... ]
 

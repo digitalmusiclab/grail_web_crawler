@@ -3,30 +3,53 @@
 // Load dependencies
 const request = require('request');
 const baseUrl = require('./base-url');
+const _ = require("lodash");
+const SpotifyArtist = require("./../models/artist");
 
 
-exports = module.exports = function getArtistById(id, callback) {
 
-  const requestParams = {
-    baseUrl,
-    uri: `artists/${id}`
-  }
+/* Returns a promise of a SpotifyArtist Object */
+exports = module.exports = function getById(id) {
 
-  request(requestParams, (error, response, body) => {
-      
-      if (error) {
-        return callback(error);
-      }
+    return new Promise( (resolve, reject) => {
 
-      let data = null;
-      try {
-        data = JSON.parse(body);
-      } 
-      catch (error) {
-        return callback(error);
-      }
+        const requestParams = {
+            baseUrl,
+            uri: `artists/${id}/albums`
+        }
 
-      return callback(null, data);
-    }
-  );
+        request(requestParams, (error, response, body) => {
+                
+                if (error) {
+                    return reject(error);
+                }
+
+                let data = null;
+                try {
+                    data = JSON.parse(body);
+                } 
+                catch (error) {
+                    return reject(error);
+                }
+
+                const responseItem = data.items[0];
+
+                if (!responseItem) {
+                    return reject(null);
+                }
+
+                // Extract Artist Metadata from Response
+                const name = responseItem.artists[0].name;
+                const cardinality = data.total;
+
+                // Create instance of Spotify Artist Object
+                const spotifyArtist = new SpotifyArtist({ id, name, cardinality });
+
+                // Return Spotify Artist Object
+                return resolve(spotifyArtist);
+            }
+        );
+
+    });
+
 };
