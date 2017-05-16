@@ -12,17 +12,17 @@ const utils = require('./utils');
 exports = module.exports = function criteriaScore(source, compare) {
 
     // Release Count
-    const min_count = Math.min(source.release_count, compare.release_count);
-    const max_count = Math.max(source.release_count, compare.release_count);
+    const min_count = Math.min(source.cardinality, compare.cardinality);
+    const max_count = Math.max(source.cardinality, compare.cardinality);
     
     // Critera Scores
-    const criteria_artist_name = utils.stringDistance(source.name, compare.name);
-    const criteria_artist_cardinality = (min_count/max_count).toFixed(2);
+    const artist_criteria_name = utils.stringDistance(source.name, compare.name);
+    const artist_criteria_cardinality = (min_count/max_count).toFixed(4);
 
     // Overall Critera Scores
-    const scores = [criteria_artist_name, criteria_artist_cardinality]
-    const criteria_overall = utils.average(scores);
+    const scores = [artist_criteria_name, artist_criteria_cardinality]
+    const artist_criteria_overall = utils.average(scores);
 
     // Return Critera Scores
-    return { criteria_artist_name, criteria_artist_cardinality, criteria_overall };
+    return { artist_criteria_name, artist_criteria_cardinality, artist_criteria_overall };
 }

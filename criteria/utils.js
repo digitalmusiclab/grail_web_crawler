@@ -2,6 +2,7 @@
 
 // Load Dependencies
 const Levenshtein = require('fast-levenshtein');
+const StringSimilarity = require('string-similarity');
 
 
 /*
@@ -11,9 +12,7 @@ const Levenshtein = require('fast-levenshtein');
     @param {string} str2 - String to be compared
 */
 exports.stringDistance = (str1, str2) => {
-    const maxLength = Math.max(str1.lenght, str2.length);
-    const levDistance = Levenshtein.get(str1, str2, { useCollator: true });
-    return levDistance/maxLength;
+    return StringSimilarity.compareTwoStrings(str1, str2);
 }
 
 exports.average = (arr) => {

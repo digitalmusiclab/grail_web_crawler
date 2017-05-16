@@ -2,6 +2,7 @@
 
 // Load Dependencies
 const utils = require('./utils');
+const assert = require('assert');
 
 
 /* 
@@ -12,18 +13,24 @@ const utils = require('./utils');
 */
 exports = module.exports = function criteriaScore(source, compare) {
 
+    // TODO: Compute critera scores for available attributes of source and compare
+    assert(source.position, "Source Track Position");
+    assert(source.name, "Source Track Name");
+    assert(compare.position, "Compare Track Position");
+    assert(compare.name, "Compare Track Name");
+
     // Track Position
     const absolutePos = Math.abs(source.position - compare.position);
     const max_position = Math.max(source.position, compare.position);
     
     // Critera Scores
-    const criteria_track_pos = (absolutePos/max_position).toFixed(4);
-    const criteria_track_name = utils.stringDistance(source.name, compare.name);
+    const track_criteria_pos = ( 1 - ( absolutePos / max_position ) ).toFixed(4);
+    const track_criteria_name = utils.stringDistance(source.name, compare.name);
 
     // Overall Critera Scores
-    const scores = [criteria_track_pos, criteria_track_name]
-    const criteria_overall = utils.average(scores);
+    const scores = [track_criteria_pos, track_criteria_name]
+    const track_criteria_overall = utils.average(scores);
 
     // Return Critera Scores
-    return { criteria_track_name, criteria_track_pos, criteria_overall };
+    return { track_criteria_name, track_criteria_pos, track_criteria_overall };
 }
