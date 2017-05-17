@@ -16,6 +16,7 @@ var kue_params = {
 
 var Queue = kue.createQueue(kue_params);
 
+
 // Find Job IDs for all Active Jobs
 Queue.active(function (err, ids) {
 
@@ -29,9 +30,18 @@ Queue.active(function (err, ids) {
 				return console.error(err);
 			}
 
-			console.log(job);
-
 			job.inactive();
 		});
 	});
 });
+
+// Queue.delayed(function (err, ids) {
+// 	ids.forEach(function (id) {
+// 		kue.Job.get(id, function (err, job) {
+// 			if (err) {
+// 				return console.error(err);
+// 			}
+// 			job.inactive();
+// 		})
+// 	})
+// })

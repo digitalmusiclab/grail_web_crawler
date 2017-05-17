@@ -1,6 +1,5 @@
 # grail_web_crawler
 
-
 ## Workflow
 - Seed Scripts > Seed Loader > Job Dispatch > Job Processor > API > Criteria Matching > Insert/Update
 
