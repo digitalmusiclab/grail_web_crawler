@@ -8,18 +8,20 @@
     Job processors will use MusicBrainz Release ID or MixRadio Artist 
     and Release Name to query the Last.fm Release API.
 
-    Data Columns = grail_release_ID | mixradio_release_ID | TRACK_JSON
-    TRACK_JSON = [{
-        "mr_track_id": "12342", 
-        "position": "5", 
-        "mr_track_name": "Sabotage",
-        "mr_release_name": "Ill Communication",
-        "mr_release_cardinality": "22",
-        "mr_artist_name": "Beastie Boys",
-        "musicbrainz_track_id": "NULL",
-        "lfm_release_id":"1234"
+    SCRIPT Data Columns
+    ===================================
+    mb_realease_id: String,
+    mb_artist_id: String
+    mr_release_id: String,
+    mr_release_name: Integer,
+    mr_release_cardinality: Integer,
+    mr_release_tracks: [{
+        "mr_track_id": Integer,
+        "mr_track_name": String,
+        "mr_track_position": Integer,
+        "mb_track_id": String,
     }]
-
+    ===================================
 */
 
 
@@ -32,12 +34,14 @@ const lineParser = (line) => {
     const attrs = line.split('\t');
     
     // Parse Line Data    
-    const grail_release_id = attrs[0];
-    const mixradio_release_id = attrs[1];
-    const mixradio_release_tracks = JSON.parse(attrs[2]);
-
-    // Job Metadata
-    const data = { grail_release_id, mixradio_release_id, mixradio_release_tracks };
+    const data = {
+        mb_release_id: attrs[0],
+        mb_artist_id: attrs[1],
+        mr_release_id: attrs[2],
+        mr_release_name: attrs[3],
+        mr_release_cardinality: attrs[4],
+        mr_release_tracks: JSON.parse(attrs[5])
+    }
 
     return { namespace, data };
 }

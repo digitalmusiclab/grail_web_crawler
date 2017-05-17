@@ -4,10 +4,20 @@
 const _ = require('lodash');
 const request = require('request');
 const baseUrl = require('./base-url');
+const LastFmTrack = require("./../models/track");
 
 
 
-exports = module.exports = function getTrackByID(musicbrainzArtistId, musicbrainzTrackId, callback) {
+
+/* 
+    Get LastFM Track By MusicBrainz Track and Artist ID
+
+    @param { sting } musicbrainzTrackId
+    @param { sting } musicbrainzArtistId
+
+    @return { Promise.Array } LastFmTrack
+*/
+exports.getByMusicBrainzId = (musicbrainzTrackId, musicbrainzArtistId) => {
 
     const requestParams = { 
         baseUrl,
@@ -20,30 +30,13 @@ exports = module.exports = function getTrackByID(musicbrainzArtistId, musicbrain
         }
     }
 
-    request(requestParams, (error, response, body) => {
-
-        if (error) {
-            return callback(error);
-        }
-
-        let data = null;
-        
-        try {
-            data = JSON.parse(body);
-        } 
-        catch (error) {
-            return callback(error);
-        }
-
-        return callback(null, data);
-    });
-
+    return sendRequest(requestParams);
 }
 
 
 
 
-exports = module.exports = function getTrackByName(artistName, trackName, callback) {
+exports.getByName = (artistName, trackName, callback) => {
 
     const requestParams = { 
         baseUrl,
@@ -55,22 +48,48 @@ exports = module.exports = function getTrackByName(artistName, trackName, callba
             track: trackName
         }
     }
+}
 
-    request(requestParams, (error, response, body) => {
 
-        if (error) {
-            return callback(error);
+
+const sendRequest = function (parameters) {
+
+    return new Promise( (resolve, reject) => {
+
+        request(parameters, (error, response, body) => {
+
+            if (error) {
+                return reject(error);
+            }
+
+            let data = null;
+            try {
+                data = JSON.parse(body);
+            } 
+            catch (error) {
+                return reject(error);
+            }
+
+            return resolve(data);
+        });
+    });
+}
+
+const parseLastFMTrack = (data) => {
+    
+    return new Promise( (resolve, reject) => {
+
+        const items = data.items;
+
+        if (!items) {
+            return reject(null);
         }
 
-        let data = null;
-        
-        try {
-            data = JSON.parse(body);
-        } 
-        catch (error) {
-            return callback(error);
-        }
+        // Parse Reponse Items into SpotifyTrack objects
+        const spotifyTracks = _.map(items, (item) => {
+            // return new SpotifyTrack(item);
+        });
 
-        return callback(null, data);
+        return spotifyTracks;
     });
 }

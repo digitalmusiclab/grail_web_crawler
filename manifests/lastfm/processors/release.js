@@ -2,57 +2,78 @@
 
 // Load dependencies
 const Logger = rootRequire('lib/logger');
-const spotify = require('./../api');
-const SpotifyRateLimiter = rootRequire('lib/rate-limiter').LastFm;
+const LastFmApi = require('./../api');
+const RateLimiter = rootRequire('lib/rate-limiter').LastFm;
+const MixRadioRelease = rootRequire('manifests/mixradio/models').Release;
+const ReleaseCriteriaMatch = rootRequire("criteria/release");
+const QueryHelper = rootRequire("lib/queries");
+const db = rootRequire("lib/database");
+const _ = require("lodash");
 
-/**
- * Queries for a Spotify track from the API given an ISRC.
- * 
- * @param {object} job - The job that was contains all of the required data
- * @param {string} job.data.isrc - The ISRC to query for the track with
- * @param {function} done - Called when done or if there is an error
- * 
- * @return {void}
- */
-exports = module.exports = function trackByIsrc(job, done) {
-  // Ask rate limiter for time left before a request can be made
-  SpotifyRateLimiter(process.pid, (error, timeleft) => {
-    // If rate limiter reports an error, invoke callback with error
-    if (error) {
-      return done(error);
-    }
 
-    // Make sure that the ISRC is stored in the job metadata
-    const isrc = job.data.isrc;
-    if (typeof isrc !== 'string') {
-      return done('spotify.trackByIsrc: no isrc provided');
-    }
+/*
+    Job Data (JSON Object)
+    ===================================
+    mb_realease_id: String,
+    mb_artist_id: String
+    mr_release_id: String,
+    mr_release_name: Integer,
+    mr_release_cardinality: Integer,
+    mr_release_tracks: [{
+        "mr_track_id": Integer,
+        "mr_track_name": String,
+        "mr_track_position": Integer,
+        "mb_track_id": String,
+    }]
+    ===================================
+*/
+exports = module.exports = function process(job, done) {
 
-    // Parse time left returned by rate limiter
-    const time = Number.parseInt(timeleft, 10);
-    const sleepTime = Math.max(time, 0);
+    // Reference MusicBrainz Release IDs
+    const { mb_realease_id, mb_artist_id } = job.data;
 
-    // Timeout execution until request can be made
-    return setTimeout(() => {
-      spotify.getTracksByIsrc(isrc, (error, tracks) => {
-        // If the API responds with an error, fail the job
+    // Parse MixRadio Release from Job Data
+    const mixradioRelease = new MixRadioRelease(job.data);
+
+    
+    RateLimiter(process.pid, (error, timeLeft) => {
+
         if (error) {
-          return done(error);
+            return done(error);
         }
 
-        // No tracks were returned.  This is okay, just indicate we are done.
-        if (!tracks) {
-          return done();
+        const sendRequest = function () {
+
+            LastFmApi.Release.getByMusicBrainzId(job.data.sp_realease_id)
+            .then( (spotifyRelease) => {
+                return updateGrailRelease(mixradioRelease, spotifyRelease)
+            })
+            .then( () => {
+                return done();
+            })
+            .catch( (error) => {
+                return done(error);
+            });
         }
 
-        // TODO: Write to wherever this data is needed.  We no longer write to a
-        // secondary database so this data needs a home.
-        for (const track of tracks) {
-          Logger.info('spotify.trackByIsrc: track returned', track);
-        }
 
-        return done();
-      });
-    }, sleepTime);
-  });
+        // Respect the rate limit before making the request
+        const time = Number.parseInt(timeLeft, 10);
+        const sleepTime = Math.max(time, 0);
+
+        return setTimeout(sendRequest, sleepTime);
+    });
 };
+
+
+const updateGrailRelease = (mr_release, sp_release) => {
+
+    const criteriaJson = CriteriaMatch.criteriaScore(mr_release, sp_release);
+
+    const spotify_release_criteria = JSON.stringify(criteriaJson);
+
+    return knex("grail_release")
+        .where('mixradio_release_id', mr_release.id)
+        .andWhere('spotify_release_id', sp_release.id)
+        .update({ spotify_release_criteria });
+} 
