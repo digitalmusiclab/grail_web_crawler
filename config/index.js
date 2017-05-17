@@ -37,3 +37,7 @@ exports.Redis = {
 exports.Dashboard = {
     port: process.env.DASHBOARD_PORT
 }
+
+exports.Keys = {
+    LastFm: process.env.KEY_LASTFM
+}
