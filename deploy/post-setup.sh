@@ -1,0 +1,1 @@
+# Path to script on host machine. Will be executed on host after cloning the repo.
