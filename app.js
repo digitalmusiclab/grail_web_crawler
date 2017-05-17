@@ -1,16 +1,19 @@
-var cluster = require('cluster');
-var numCPUs = require('os').cpus().length;
+'use strict';
 
-// Load Master Process
+// Load dependencies
+const cluster = require('cluster');
+const cpuTotal = require('os').cpus().length;
+
+
 if (cluster.isMaster) {
 
-	for (var i = 0; i < numCPUs; i++) {
-        cluster.fork();
-    }
+  // For each core fork a child process
+  for (let cpu = 0; cpu < 1; cpu++) {
+    cluster.fork();
+  }
 
-    require("./master.js")
-}
-// Load Worker Process
+  require('./master');
+} 
 else {
-	require("./worker.js");
+  require('./worker');
 }

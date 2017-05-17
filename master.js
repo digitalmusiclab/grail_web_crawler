@@ -1,50 +1,60 @@
-var env = process.env.NODE_ENV || "development";
-var kue_config = require("./config/secrets.js")[env].queue.kue;
+'use strict';
 
-var Logger 	= require("./lib/Logger.js");
-var completed_jobs = 0;
+/* Load Environment Variables */
+require("dotenv-safe").config({
+    path: `./config/.env.${process.env.NODE_ENV || 'development'}`,
+    sample: "./config/.env.requirements",
+    silent: true
+});
 
-Logger.info("Master Process Loaded");
+// Load dependencies
+require("./lib/root-require")();
+const Logger = rootRequire('lib/logger');
+const config = rootRequire('config');
 
-// Load Crawler Seed
-// require("./lib/CrawlSeeder.js");
-
-// Load Database Models
-require("./models/index.js");
-
-// Load Job Queue
-var kue 	= require("kue");
-var Queue 	= kue.createQueue(kue_config);
-
-// Load Job Queue Web Interface
-kue.app.set('title', 'Spotify Crawler Dashboard');
-kue.app.listen(3000);
+let completedJobs = 0;
+Logger.info('Master process loaded');
 
 
-// Thread Shutdown Procedure
-var shutdown_procedure = function (sig) {
-	Logger.info("Queue shutting down...");
-	Queue.shutdown(5000, function (err) {
-		if (err) Logger.error('Kue shutdown: ', err);
-		process.exit(0);
-	});
+// Load job queue
+const kue = require('kue');
+const Queue = kue.createQueue(config.JobQueue);
+
+
+// Load job queue web interface
+kue.app.set('title', 'Grail Crawler Dashboard');
+kue.app.listen(config.Dashboard.port);
+
+
+// Thread shutdown procedure
+function shutdownProcedure() {
+  Logger.info('Queue shutting down');
+  Queue.shutdown(5000, (error) => {
+    if (error) {
+      Logger.error('Queue shutdown error: ', error);
+    }
+    process.exit(0);
+  });
 }
 
 
-// Process Failure Events
-process.on('SIGTERM', shutdown_procedure);
-process.on('SIGINT', shutdown_procedure);
+// Process failure events
+process.on('SIGTERM', shutdownProcedure);
+process.on('SIGINT', shutdownProcedure);
 
 
-// Log Queue Level Events
-Queue.on('job complete', function (id, result) {
-	Logger.info('Completed Job: %d, Total Completed: %d', id, ++completed_jobs);
+// Log queue level events
+Queue.on('job complete', (id, result) => {
+  // if (result) {
+  //   Logger.info(`Job ${id} Result: ${JSON.stringify(result)}`);
+  // }
+  Logger.info('Completed job: %d, Total completed: %d', id, ++completedJobs);
 });
 
-Queue.on('job failed', function (id, result) {
-	Logger.error("Job: ", id, " failed with result: ", result);
+Queue.on('job failed', (id, result) => {
+  Logger.error('Job: ', id, ' failed with result: ', result);
 });
 
-Queue.on('error', function (err) {
-	Logger.error("Queue Error: ", err);
+Queue.on('error', (error) => {
+  Logger.error('Queue error: ', error);
 });

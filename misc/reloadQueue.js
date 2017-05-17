@@ -16,27 +16,24 @@ var kue_params = {
 
 var Queue = kue.createQueue(kue_params);
 
-// Queue.failed(function (err, ids) {
-// 	ids.forEach(function (id) {
-// 		kue.Job.get(id, function (err, job) {
-// 			if (err) {
-// 				return console.error(err);
-// 			}
-// 			job.inactive();
-// 		})
-// 	})
-// })
 
+// Find Job IDs for all Active Jobs
 Queue.active(function (err, ids) {
+
+	// Find Kue Job Reference via ID
 	ids.forEach(function (id) {
+		
+		// Set Job state to Inactive
 		kue.Job.get(id, function (err, job) {
+			
 			if (err) {
 				return console.error(err);
 			}
+
 			job.inactive();
-		})
-	})
-})
+		});
+	});
+});
 
 // Queue.delayed(function (err, ids) {
 // 	ids.forEach(function (id) {
