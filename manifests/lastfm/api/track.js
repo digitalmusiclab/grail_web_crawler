@@ -5,6 +5,7 @@ const _ = require('lodash');
 const request = require('request');
 const baseUrl = require('./base-url');
 const LastFmTrack = require("./../models/track");
+const Config = rootRequire('config');
 
 
 
@@ -22,7 +23,7 @@ exports.getByMusicBrainzId = (musicbrainzTrackId, musicbrainzArtistId) => {
     const requestParams = { 
         baseUrl,
         qs: {
-            api_key: "b9e05b386939dbca75c553f6bdceebc1",
+            api_key: Config.Keys.LastFm,
             format: "json",
             method: 'track.getinfo',
             artist: musicbrainzArtistId,
@@ -41,7 +42,7 @@ exports.getByName = (artistName, trackName, callback) => {
     const requestParams = { 
         baseUrl,
         qs: {
-            api_key: "b9e05b386939dbca75c553f6bdceebc1",
+            api_key: Config.Keys.LastFm,
             format: "json",
             method: "track.getinfo",
             artist: artistName,

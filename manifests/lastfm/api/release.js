@@ -3,6 +3,7 @@
 // Load dependencies
 const request = require('request');
 const baseUrl = require('./base-url');
+const Config = rootRequire('config');
 
 
 
@@ -19,7 +20,7 @@ module.getByMusicBrainzId = (musicbrainzReleaseId, musicbrainzArtistId) => {
     const requestParams = { 
         baseUrl,
         qs: {
-            api_key: "b9e05b386939dbca75c553f6bdceebc1",
+            api_key: Config.Keys.LastFm,
             format: "json",
             method: 'album.getinfo',
             artist: musicbrainzArtistId,
@@ -36,7 +37,7 @@ module.getByName = (releaseName, artistName, callback) => {
     const requestParams = { 
         baseUrl,
         qs: {
-            api_key: "b9e05b386939dbca75c553f6bdceebc1",
+            api_key: Config.Keys.LastFm,
             format: "json",
             method: 'album.getinfo',
             artist: artistName,
