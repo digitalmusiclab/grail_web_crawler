@@ -8,10 +8,14 @@
     "aws-sdk": "2.42.0",
     "bluebird": "3.5.0",
     "command-line-args": "4.0.3",
+    "dotenv-safe": "^4.0.4",
+    "fast-levenshtein": "^2.0.6",
+    "knex": "^0.13.0",
     "kue": "0.11.5",
     "limiter": "1.1.0",
     "line-by-line": "0.1.5",
     "lodash": "4.17.4",
+    "mysql": "^2.13.0",
     "node-gyp": "3.6.0",
     "pg": "6.1.5",
     "pg-hstore": "2.3.2",
@@ -19,17 +23,31 @@
     "redis": "2.7.1",
     "request": "2.81.0",
     "rolling-rate-limiter": "0.1.5",
-    "sequelize": "3.30.4",
+    "sequelize": "^3.30.4",
+    "string-similarity": "^1.1.0",
     "tokenbucket": "0.3.2",
     "winston": "2.3.1"
   },
   "devDependencies": {
+    "chai": "^3.5.0",
     "eslint": "3.19.0",
-    "nodemon": "1.11.0"
+    "mocha": "^3.3.0",
+    "nock": "^9.0.13",
+    "nodemon": "1.11.0",
+    "sinon": "^2.2.0",
+    "superagent": "^3.5.2"
   },
   "scripts": {
     "lint": "eslint .",
-    "start": "nodemon app"
+    "start": "nodemon app",
+    "master": "node master.js",
+    "worker": "node worker.js",
+    "seed:musicbrainz:track": "node loader.js --namespace=musicbrainz:track --seed=data/musicbrainz/track.tsv",
+    "seed:musicbrainz:release": "node loader.js --namespace=musicbrainz:release --seed=data/musicbrainz/release.tsv",
+    "seed:musicbrainz:artist": "node loader.js --namespace=musicbrainz:artist --seed=data/musicbrainz/artist.tsv",
+    "seed:spotify:track": "node loader.js --namespace=spotify:track --seed=data/spotify/track.tsv",
+    "seed:spotify:release": "node loader.js --namespace=spotify:release --seed=data/spotify/release.tsv",
+    "seed:spotify:artist": "node loader.js --namespace=spotify:artist --seed=data/spotify/artist.tsv"
   },
   "author": "Digital Music Lab",
   "license": "ISC"

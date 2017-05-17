@@ -1,21 +1,30 @@
 'use strict';
 
+/* Load Environment Variables */
+require("dotenv-safe").config({
+    path: `./config/.env.${process.env.NODE_ENV || 'development'}`,
+    sample: "./config/.env.requirements",
+    silent: true
+});
+
 // Load dependencies
-const secrets = require('./config/secrets');
-const kueConfiguration = secrets[process.env.NODE_ENV || 'development'].queue.kue;
+require("./lib/root-require")();
+const Logger = rootRequire('lib/logger');
+const config = rootRequire('config');
 
-const Logger = require('./lib/logger');
 let completedJobs = 0;
-
 Logger.info('Master process loaded');
+
 
 // Load job queue
 const kue = require('kue');
-const Queue = kue.createQueue(kueConfiguration);
+const Queue = kue.createQueue(config.JobQueue);
+
 
 // Load job queue web interface
-kue.app.set('title', 'Spotify Crawler Dashboard');
-kue.app.listen(process.env.KUE_PORT || 3000);
+kue.app.set('title', 'Grail Crawler Dashboard');
+kue.app.listen(config.Dashboard.port);
+
 
 // Thread shutdown procedure
 function shutdownProcedure() {
@@ -28,12 +37,17 @@ function shutdownProcedure() {
   });
 }
 
+
 // Process failure events
 process.on('SIGTERM', shutdownProcedure);
 process.on('SIGINT', shutdownProcedure);
 
+
 // Log queue level events
-Queue.on('job complete', (id) => {
+Queue.on('job complete', (id, result) => {
+  // if (result) {
+  //   Logger.info(`Job ${id} Result: ${JSON.stringify(result)}`);
+  // }
   Logger.info('Completed job: %d, Total completed: %d', id, ++completedJobs);
 });
 
@@ -44,7 +58,3 @@ Queue.on('job failed', (id, result) => {
 Queue.on('error', (error) => {
   Logger.error('Queue error: ', error);
 });
-
-// Master is setup and ready to go, parse the options for the crawl job to do
-const options = require('./config/options.config');
-require(options.crawler);

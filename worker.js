@@ -1,9 +1,17 @@
 'use strict';
 
+/* Load Environment Variables */
+require("dotenv-safe").config({
+    path: `./config/.env.${process.env.NODE_ENV || 'development'}`,
+    sample: "./config/.env.requirements",
+    silent: true
+});
+
 // Load dependencies
+require("./lib/root-require")();
 const cluster = require('cluster');
-const JobQueue = require('./lib/job-queue');
-const Logger = require('./lib/logger');
+const JobQueue = rootRequire('lib/job-queue');
+const Logger = rootRequire('lib/logger');
 
 if (cluster.worker) {
   Logger.info('Worker process #%d loaded', cluster.worker.id);
@@ -23,14 +31,10 @@ if (cluster.worker) {
  * as the first argument to the callback. Passing an error will notify the JobQueue 
  * to either reschedule the job, or mark the job as failed.
  */
-const spotify = {
-  albumById: require('./processors/spotify-albums-by-ids'),
-  albumsByIds: require('./processors/spotify-album-by-id'),
-  tracksByIsrc: require('./processors/spotify-tracks-by-isrc')
-};
-const musicBrainz = {
-  albumBySpotifyArtistAndAlbum: require('./processors/music-brainz-album-by-spotify')
-};
+
+const MusicBrainz = rootRequire('manifests/musicbrainz/processors');
+const SpotifyProcessor = rootRequire('manifests/spotify/processors');
+
 
 /**
  * JobQueue Router
@@ -45,7 +49,13 @@ const musicBrainz = {
  * 2. {number} - How many jobs of this type can be processed at once
  * 3. {function} - How the job will be processed
  */
-JobQueue.process('spotify:trackByIsrc', 8, spotify.trackByIsrc);
-JobQueue.process('spotify:albumBySpotifyAlbumId', 8, spotify.albumById);
-JobQueue.process('spotify:albumsBySpotifyAlbumIds', 8, spotify.albumsByIds);
-JobQueue.process('mb:releaseBySpotifyArtistAndAlbum', 8, musicBrainz.albumBySpotifyArtistAndAlbum);
+
+// MusicBrainz Processors
+JobQueue.process('musicbrainz:track', 1, MusicBrainz.Track);
+JobQueue.process('musicbrainz:artist', 1, MusicBrainz.Artist);
+JobQueue.process('musicbrainz:release', 1, MusicBrainz.Release);
+
+// Spotify Processors
+JobQueue.process('spotify:track', 1, SpotifyProcessor.Track);
+JobQueue.process('spotify:artist', 1, SpotifyProcessor.Artist);
+JobQueue.process('spotify:release', 1, SpotifyProcessor.Release);

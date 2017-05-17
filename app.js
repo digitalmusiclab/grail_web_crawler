@@ -4,12 +4,16 @@
 const cluster = require('cluster');
 const cpuTotal = require('os').cpus().length;
 
+
 if (cluster.isMaster) {
+
   // For each core fork a child process
-  for (let cpu = 0; cpu < cpuTotal; cpu++) {
+  for (let cpu = 0; cpu < 1; cpu++) {
     cluster.fork();
   }
+
   require('./master');
-} else {
+} 
+else {
   require('./worker');
 }
