@@ -1,3 +1,7 @@
+# Environment Configurations
+config/.env.development
+config/.env.production 
+
 # Extra data files
 data
 
