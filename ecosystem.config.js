@@ -12,7 +12,7 @@ module.exports = {
             "instances"     : 1,
             "exec_mode"     : "fork",
             "watch"         : false,
-            "env"           : { "NODE_ENV": "development" }
+            "env"           : { "NODE_ENV": "development" },
             "env_production": { "NODE_ENV": "production"  }
         },
         {
@@ -21,7 +21,7 @@ module.exports = {
             "instances"     : 0,
             "exec_mode"     : "cluster",
             "watch"         : false,
-            "env"           : { "NODE_ENV": "development" }
+            "env"           : { "NODE_ENV": "development" },
             "env_production": { "NODE_ENV": "production"  }
         }
     ],
@@ -38,7 +38,7 @@ module.exports = {
             "path"          : "/home/kurtbradd/grail_web_crawler",
             "pre-setup"     : "./deploy/pre-setup.sh",
             "post-setup"    : "./deploy/post-setup.sh",
-            "pre-deploy-local": "rsync -avz -e 'ssh -p 22' ./config/.env.production kurtbradd@130.113.103.46:~/grail_web_crawler/config/.env.production"
+            "pre-deploy-local": "rsync -avz -e 'ssh -p 22' ./config/.env.production kurtbradd@130.113.103.46:~/grail_web_crawler/config/.env.production",
             "post-deploy"   : "npm install && pm2 startOrGracefulReload ecosystem.config.js --env production"
         }
     }
