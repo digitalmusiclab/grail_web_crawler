@@ -32,13 +32,13 @@ module.exports = {
     "deploy": {
         "production": {
             "user"          : "kurtbradd",
-            "host"          : "130.113.103.46",
+            "host"          : "api.digitalmusiclab.org",
             "ref"           : "origin/master",
             "repo"          : "https://github.com/digitalmusiclab/grail_web_crawler",
-            "path"          : "/home/kurtbradd/grail_web_crawler",
+            "path"          : "/home/kurtbradd/apps/grail_web_crawler",
             "pre-setup"     : "./deploy/pre-setup.sh",
             "post-setup"    : "./deploy/post-setup.sh",
-            "pre-deploy-local": "rsync -avz -e 'ssh -p 22' ./config/.env.production kurtbradd@130.113.103.46:~/grail_web_crawler/config/.env.production",
+            "pre-deploy-local": "rsync -avz -e 'ssh -p 22' ./config/.env.production kurtbradd@130.113.103.46:~/apps/grail_web_crawler/config/.env.production",
             "post-deploy"   : "npm install && pm2 startOrGracefulReload ecosystem.config.js --env production"
         }
     }
