@@ -41,6 +41,7 @@ exports = module.exports = function process(job, done) {
 
             SpotifyApi.Track.getByIsrc(isrc)
             .then( (spotifyTracks) => {
+            
                 // Filter out tracks without atleast one artist
                 spotifyTracks = _.filter(spotifyTracks, track => (track.artists.length > 0));
 
