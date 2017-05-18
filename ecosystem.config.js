@@ -32,7 +32,7 @@ module.exports = {
     "deploy": {
         "production": {
             "user"          : "kurtbradd",
-            "host"          : "api.digitalmusiclab.org",
+            "host"          : "130.113.103.46",
             "ref"           : "origin/master",
             "repo"          : "https://github.com/digitalmusiclab/grail_web_crawler",
             "path"          : "/home/kurtbradd/apps/grail_web_crawler",
