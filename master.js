@@ -45,10 +45,10 @@ process.on('SIGINT', shutdownProcedure);
 
 // Log queue level events
 Queue.on('job complete', (id, result) => {
-  // if (result) {
-  //   Logger.info(`Job ${id} Result: ${JSON.stringify(result)}`);
-  // }
-  Logger.info('Completed job: %d, Total completed: %d', id, ++completedJobs);
+  if (result) {
+    return Logger.info(`Job ${id} Result: ${JSON.stringify(result)}`);
+  }
+  return Logger.info('Completed job: %d, Total completed: %d', id, ++completedJobs);
 });
 
 Queue.on('job failed', (id, result) => {
