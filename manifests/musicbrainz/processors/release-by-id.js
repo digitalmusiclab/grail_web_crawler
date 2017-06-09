@@ -1,6 +1,7 @@
 'use strict';
 
 // Load dependencies
+const Sleep = rootRequire('lib/sleep');
 const Logger = rootRequire('lib/logger');
 const MusicBrainz = require('./../api');
 const RateLimiter = rootRequire('lib/rate-limiter').MusicBrainz;
@@ -18,7 +19,7 @@ const _ = require("lodash");
     mr_release_cardinality: "13",
     mr_artist_id: "10055880",
     mr_artist_name: "Remember Me Soundtrack",
-    mb_release_id: "NULL",
+    mb_release_id: "ABCD123XYZ",
     mr_release_tracks: [{
         "mr_track_id": "1321455",
         "mr_track_name": "Lenny",
@@ -32,6 +33,9 @@ exports = module.exports = function process(job, done) {
 
     const mixradioRelease = new MixRadioRelease(job.data);
 
+    const mr_track_ids = _.map(mixradioRelease.tracks, "id");
+
+    // Respect the rate limit before making the request
     RateLimiter(process.pid, (error, timeLeft) => {
 
         // Rate limiter reported an error, exit immediately
@@ -39,119 +43,40 @@ exports = module.exports = function process(job, done) {
             return done(error);
         }
 
-        // Send Request To MusicBrainz API
-        const sendRequest = function () {
-            
-            getMusicBrainzReleases(job.data)
-            .then( (data) => {
-                return parseReleaseData(data);
-            })
-            .then( (musicbrainzReleases) => {
-                return updateGrailWithReleases(mixradioRelease, musicbrainzReleases);
-            })
-            .then( (result) => {
-                return done(null, result);
-            })
-            .catch( (error) => {
-                return done(error);
-            });
-        }
+        Sleep(timeLeft)
+        .then( () => {
+            return MusicBrainz.Release.getById(job.data.mb_release_id);
+        })
+        .then( (musicbrainzRelease) => {
+            return updateGrailWithRelease(mixradioRelease, musicbrainzRelease);
+        })
+        .then( ([grail_release_ids, grail_artist_ids, trx]) => {
+            return insertTrackIntoGrail(grail_release_ids, grail_artist_ids, mr_track_ids, trx);
+        })
+        .then( (result) => {
+            return done(null, result);
+        })
+        .catch( (error) => {
+            return done(error);
+        });
 
-
-        // Respect the rate limit before making the request
-        const time = Number.parseInt(timeLeft, 10);
-        const sleepTime = Math.max(time, 0);
-
-        return setTimeout(sendRequest, sleepTime);
     });
 };
 
 
-/* Returns a promise to fetch MusicBrainz release data */
-const getMusicBrainzReleases = (data) => {
-    
-    if (data.mb_release_id) {
-        return MusicBrainz.Release.getById(data.mb_release_id);
-    }
-
-    return getReleaseByName(data.mr_release_name, data.mr_artist_name);
-}
-
-
-/* Parse Musicbrainz Release(s) into an Array of releases  */
-const parseReleaseData = (releaseData) => {
-
-    if (!releaseData) {
-        return Promise.reject(null);
-    }
-    
-    if (releaseData.constructor === Array) {
-        return Promise.resolve(releaseData);
-    }
-
-    if (releaseData.constructor == Object) {
-        return Promise.resolve([releaseData]);
-    }
-
-    return Promise.reject(new Error("MusicBrainz Release Data: Incorrect Data Type. Must be Array or Object"));
-}
-
-
-/* Sequentially update Grail with returned MusicBrainz Releases */
-const updateGrailWithReleases = (mr_release, musicbrainz_releases) => {
-
-    let promise = Promise.resolve();
-
-    _.each(musicbrainz_releases, (mb_release) => {
-
-        promise = promise.then( () => {
-            return updateGrailWithRelease(mr_release, mb_release)
-        });
-
-    });
-
-    return promise;
-}
-
-
 const updateGrailWithRelease = (mr_release, mb_release) => {
     
-    // Start database transaction
-    return db.transaction( (trx) => {
-
-        const releasePromise = findAndUpdateOrCreateMusicBrainzRelease(mr_release, mb_release, trx);        
+    return new Promise( (resolve) => {
+        return db.transaction(resolve);
+    })
+    .then( (trx) => {
+        
+        const releasePromise = findAndUpdateOrCreateMusicBrainzRelease(mr_release, mb_release, trx);
         const artistPromise = findAndUpdateOrCreateMusicBrainzArtist(mr_release, mb_release, trx);
-
-        return Promise.all([releasePromise, artistPromise])
-            .then( ([grail_release_ids, grail_artist_ids]) => {
-                const mr_track_ids = _.map(mr_release.tracks, "id");
-                return insertTrackIntoGrail(grail_release_ids, grail_artist_ids, mr_track_ids, trx);
-            });
-    });   
+        
+        return Promise.all([releasePromise, artistPromise, trx]);
+    });
 }
-
-
-//////////////////////////////////////////////////////////////////////////////////////////
-// Helpers: API Promise Wrappers
-//////////////////////////////////////////////////////////////////////////////////////////
-
-
-// Promise Wrapper For MusicBrainz Artist Name API
-// Returns multiple MusicBrainz Release Objects
-const getReleaseByName = (releaseName, artistName) => {
-
-    return MusicBrainz.Release.getByName(releaseName, artistName)
-        .then( (releases) => {
-
-            // map these into grail jobs then return done.
-            const releasePromises = _.map(releases, (release) => {
-                return MusicBrainz.Release.getById(release.id);
-            });
-
-            return Promise.all(releasePromises);
-        });
-}
-
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Release: Check / Update / Insert
@@ -231,8 +156,8 @@ const findAndUpdateOrCreateMusicBrainzArtist = (mr_release, mb_release, trx) => 
 //////////////////////////////////////////////////////////////////////////////////////////
 
 /*  
-    If a new artist or release inserted, we must insert into Grail Track with the new grail ids for artist, and release
-    for all tracks with the original mixradio_release_id used to crawl.
+    If a new artist or release inserted, we must insert into Grail Track with the new grail 
+    ids for artist, and release for all tracks with the original mixradio_release_id used to crawl.
 
     @param { string } grail_release_ids - Grail Release IDs of inserted Releases
     @param { string } grail_artist_ids - Grail Artist IDs of inserted Artists
@@ -240,7 +165,8 @@ const findAndUpdateOrCreateMusicBrainzArtist = (mr_release, mb_release, trx) => 
 */
 const insertTrackIntoGrail = (grail_release_ids, grail_artist_ids, mr_track_ids, trx) => {
 
-    console.log("inserting track into grail: ", mr_track_ids);
+    console.log("grail_release_ids: ", grail_release_ids);
+    console.log("grail_artist_ids: ", grail_release_ids);
 
     // Create Unique Release Artist Pairs
     let artistReleaseIdPairs = [];
