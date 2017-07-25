@@ -1,9 +1,10 @@
 # Environment Configurations
 config/.env.development
-config/.env.production 
+config/.env.production
 
 # Extra data files
 data
+dump.rdb
 
 # Logs
 logs
