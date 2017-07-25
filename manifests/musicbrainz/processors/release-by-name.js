@@ -67,12 +67,8 @@ const dispatchReleaseByIdJobsFor = (metadata, musicbrainz_releases) => {
 };
 
 
-const dispatchReleaseByIdJob = (data, mb_release_id) => {
-
-    // Set mb_release_id in job metadata
-    data.mb_release_id = mb_release_id;
-
+const dispatchReleaseByIdJob = (metadata, mb_release_id) => {
     const namespace = "musicbrainz:release:id";
-
+    const data = _.assign(metadata, { mb_release_id });
     return Dispatcher.dispatchCrawlJobPromise({ namespace, data });
 };
