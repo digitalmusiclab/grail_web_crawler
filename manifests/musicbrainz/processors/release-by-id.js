@@ -210,6 +210,11 @@ const insertTrackIntoGrail = (grail_release_ids, grail_artist_ids, mr_track_ids,
         })
         .then( (newTracks) => {
             const chunkSize = newTracks.length;
-            return trx.batchInsert('grail_track', newTracks, chunkSize);
+
+            if (chunkSize > 0) {
+                return trx.batchInsert('grail_track', newTracks, chunkSize);
+            }
+
+            return Promise.resolve();
         });
-}
+};
