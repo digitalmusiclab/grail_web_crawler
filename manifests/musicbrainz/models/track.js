@@ -8,7 +8,7 @@ const utils = rootRequire('criteria/utils');
 /**
  * Composes a MusicBrainz track from the MusicBrainz API.
  */
-exports = module.exports = class MusicBrainzTrack {
+class MusicBrainzTrack {
     
     // Initializer
     constructor(data) {
@@ -25,8 +25,8 @@ exports = module.exports = class MusicBrainzTrack {
 
         return { criteria_overall, criteria_track_name };
     }
-
 };
+module.exports = MusicBrainzTrack;
 
 
 module.exports.JSONMediaMapper = (data) => {
@@ -37,7 +37,7 @@ module.exports.JSONMediaMapper = (data) => {
             name: track.title, 
             position: track.number
         });
-    }
+    };
 
     const releaseTracks = _.reduce(data.media, (tracks, media) => {
         const mb_tracks = _.map(media.tracks, trackMapper);
@@ -45,4 +45,4 @@ module.exports.JSONMediaMapper = (data) => {
     }, []);
 
     return releaseTracks;
-}
+};

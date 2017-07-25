@@ -2,14 +2,14 @@
 
 // Load Dependencies
 const _ = require('lodash');
-const MusicBrainzTrack = require('./track');
 
 /**
  * Composes a Music Brainz album from the API.  Contains information about the album
  * itself and artists associated with it.
  */
-exports = module.exports = class MusicBrainzRelease {
-  
+class MusicBrainzRelease {
+    
+    // Initializer
     constructor(data) {
         this.id = data.id;
         this.name = data.name;
@@ -18,13 +18,15 @@ exports = module.exports = class MusicBrainzRelease {
         this.tracks = data.tracks;
     }
 };
+module.exports = MusicBrainzRelease;
+
 
 /*
-    JSONResponseMapper
+    JSONResponseMapper - Parses MusicBrainzRelease objects from MusicBrainz API.
 
     @param { object } apiResponse - JSON Response from MusicBrainz API
 
-    @return { array[`MusicBrainzRelease`] } Parsed MusicBrainzRelease Objects 
+    @return { [`MusicBrainzRelease`] } Parsed MusicBrainzRelease Objects 
 */
 module.exports.JSONResponseMapper = (data) => {
 
@@ -35,10 +37,10 @@ module.exports.JSONResponseMapper = (data) => {
     const mb_releases = _.map(data.releases, (release) => {
         return new MusicBrainzRelease({ 
             id: release.id,
-            name:  release.title,
+            name: release.title,
             cardinality: release["track-count"]
         });
     });
 
     return mb_releases;
-}
+};
