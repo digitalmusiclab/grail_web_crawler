@@ -25,10 +25,27 @@ const sendRequest = function (uri, qs) {
 
         request(requestParams, (error, response, body) => {
 
+            // Catch Request Errors
             if (error) {
                 return reject(error);
             }
 
+            // Check for HTTP 200 - OK Status
+            if (response.statusCode !== 200) {
+
+                const responseContentType = response.headers["content-type"];
+                
+                // Handle Return JSON API Errors
+                if (responseContentType.includes("application/json")) {
+                    const data = JSON.parse(body);
+                    return reject(new Error(data.error));
+                }
+
+                // Return HTTP Status Code
+                return reject(new Error(response.statusMessage));
+            }
+            
+            // Try Parsing JSON
             let data = null;
             try {
                 data = JSON.parse(body);
@@ -37,6 +54,7 @@ const sendRequest = function (uri, qs) {
                 return reject(error);
             }
 
+            // Look for MusicBrainz Error Object
             if (data.error) {
                 return reject(data.error);
             }
@@ -92,7 +110,7 @@ exports.getById = (mbid) => {
             // Extract Release Id and Name
             const releaseId = data.id;
             const releaseName = data.title;
-            
+
             // Parse array of `MusicBrainzTrack`s
             const releaseTracks = MusicBrainzTrack.JSONMediaMapper(data);
             
