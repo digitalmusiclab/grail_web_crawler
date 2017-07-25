@@ -16,36 +16,53 @@ const Logger = rootRequire('lib/logger');
 const fs = require('fs');
 
 
-// Command Line Definitions
+/*
+    seeder.js
+
+    Seeder will seed the job queue from a TSV seed file
+    using the loader for a specified namespace and entity.
+
+    @arg{ String } namespace - the namespace to load
+    @arg{ String } entity - the entity level to load
+    @arg{ String } data - path to seed data
+*/
+
+
+// Command Line Options
 const options = commandLineArguments([
     { name: 'namespace', type: String },
-    { name: 'seed', type: String }
+    { name: 'entity', type: String },
+    { name: 'data', type: String }
 ]);
-
 
 // Validate that a namespace arugment exists
 if (!options.namespace) {
     throw new Error("options: namespace argument required");
 }
 
+// Validate that a namespace arugment exists
+if (!options.entity) {
+    throw new Error("options: entity argument required");
+}
+
 // Validate that seed arugment exists
-if (!options.seed) {
+if (!options.data) {
     throw new Error("options: seed argument required");
 }
 
 // Validate that the data file exists
-if (!fs.existsSync(options.seed)) {
+if (!fs.existsSync(options.data)) {
     throw new Error('options: seed file not found');
 }
 
-// Locate the seed loader to use
-const [crawl_api, crawl_entity] = options.namespace.split(":");
-const loaderPath = `./manifests/${crawl_api}/loaders/${crawl_entity}.js`
+const { namespace, entity } = options;
 
+// Locate the seed loader to use
+const loaderPath = `./manifests/${namespace}/loaders/${entity}.js`;
 
 // Validate that the seed loader file exists
 if (!fs.existsSync(loaderPath)) {
-    throw new Error('options: seed loader not found');
+    throw new Error(`options: seed loader not found`);
 }
 
 // Seed Loader that reads lines
@@ -57,7 +74,7 @@ let errorJobCount = 0;
 let dispatchedJobCount = 0;
 
 // File Reader
-const reader = new LineReader(options.seed, { 
+const reader = new LineReader(options.data, { 
     encoding: 'utf8',
     skipEmptyLines: true
 });
@@ -69,7 +86,7 @@ reader.on('line', (line) => {
     // Increment Total Job Count
     totalJobCount += 1;
 
-    let jobMetadata = null
+    let jobMetadata = null;
     
     try {
         jobMetadata = loader.lineParser(line);
@@ -93,7 +110,7 @@ reader.on('line', (line) => {
     }
 
     // Print summary every 10k lines
-    if (totalJobCount % 10000 == 0) {
+    if (totalJobCount % 10000 === 0) {
         Logger.info('----------------------------------------');
         Logger.info('seeder.report: Shutdown Report');
         Logger.info('seeder.report: %d Jobs Read', totalJobCount);
