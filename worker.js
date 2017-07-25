@@ -51,9 +51,9 @@ const SpotifyProcessor = rootRequire('manifests/spotify/processors');
  */
 
 // MusicBrainz Processors
+// TODO: Select which processors are active through command line args or env vars
 JobQueue.process('musicbrainz:track', 1, MusicBrainz.Track);
 JobQueue.process('musicbrainz:artist', 1, MusicBrainz.Artist);
-JobQueue.process('musicbrainz:release', 1, MusicBrainz.Release);
 JobQueue.process('musicbrainz:release:id', 1, MusicBrainz.ReleaseById);
 JobQueue.process('musicbrainz:release:name', 1, MusicBrainz.ReleaseByName);
 
