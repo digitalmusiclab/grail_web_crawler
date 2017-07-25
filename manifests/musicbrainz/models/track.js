@@ -32,9 +32,9 @@ module.exports = MusicBrainzTrack;
 module.exports.JSONMediaMapper = (data) => {
 
     const trackMapper = (track) => {
-        return new MusicBrainzTrack({ 
-            id: track.id, 
-            name: track.title, 
+        return new MusicBrainzTrack({
+            id: track.id,
+            title: track.title,
             position: track.number
         });
     };
