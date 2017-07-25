@@ -5,7 +5,6 @@ const Sleep = rootRequire('lib/sleep');
 const MusicBrainz = require('./../api');
 const Dispatcher = rootRequire('lib/dispatch');
 const RateLimiter = rootRequire('lib/rate-limiter').MusicBrainz;
-const MixRadioRelease = rootRequire('manifests/mixradio/models').Release;
 const _ = require("lodash");
 
 /*
@@ -27,8 +26,6 @@ const _ = require("lodash");
 */
 
 exports = module.exports = function process(job, done) {
-
-    const mixradioRelease = new MixRadioRelease(job.data);
 
     // Respect the rate limit before making the request
     RateLimiter(process.pid, (error, timeLeft) => {
@@ -62,20 +59,20 @@ const dispatchReleaseByIdJobsFor = (metadata, musicbrainz_releases) => {
 
     _.each(musicbrainz_releases, (mb_release) => {
         promise = promise.then( () => {
-            return dispatchReleaseByIdJob(metadata, mb_release.id)
+            return dispatchReleaseByIdJob(metadata, mb_release.id);
         });
     });
 
     return promise;
-}
+};
 
 
 const dispatchReleaseByIdJob = (data, mb_release_id) => {
 
     // Set mb_release_id in job metadata
-    data["mb_release_id"] = mb_release_id;
+    data.mb_release_id = mb_release_id;
 
     const namespace = "musicbrainz:release:id";
 
     return Dispatcher.dispatchCrawlJobPromise({ namespace, data });
-}
+};

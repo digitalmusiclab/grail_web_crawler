@@ -16,7 +16,7 @@ exports = module.exports = class MixRadioRelease {
 
         this.tracks = _.chain(data.mr_release_tracks)
             .map((track) => {
-                const { mr_artist_id, mr_release_id }  = data;
+                const { mr_artist_id, mr_release_id } = data;
                 return new MixRadioTrack(_.merge(track, { mr_artist_id, mr_release_id }));
             })
             .sortBy("position")

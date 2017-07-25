@@ -44,7 +44,7 @@ const sendRequest = function (uri, qs) {
             return resolve(data);
         });
     });
-}
+};
 
 
 /*
@@ -61,23 +61,26 @@ exports.getByName = (releaseName, artistName) => {
     const queryParams = { 
         query: `${releaseName} AND artist:${artistName}`,
         fmt: 'json'
-    }
+    };
 
     return sendRequest('release', queryParams)
         .then(MusicBrainzRelease.JSONResponseMapper);
-}
+};
 
 
 
 /*
-    GetById - Returns Promise a MusicBrainzRelease
+    GetById - Queries the MusicBrainz API for a MusicBrainzRelease
+    using a MusicBrainzID. Returns a Promise of a `MusicBrainzRelease`
+    or null if there are no matches found.
 
     @param { String } mbid - MusicBrainz Release ID
 
-    @return { Promise } MusicBrainz Release
+    @return { Promise(`MusicBrainzRelease`) || null } - the query result
 */
 exports.getById = (mbid) => {
 
+    // Include recordings and artists in query results
     const queryParams = { 
         inc: 'recordings+artists',
         fmt: 'json'
@@ -86,18 +89,21 @@ exports.getById = (mbid) => {
     return sendRequest(`release/${mbid}`, queryParams)
         .then( (data) => {
 
+            // Extract Release Id and Name
             const releaseId = data.id;
             const releaseName = data.title;
             
-            // Array of `MusicBrainzTrack`
+            // Parse array of `MusicBrainzTrack`s
             const releaseTracks = MusicBrainzTrack.JSONMediaMapper(data);
+            
+            // Sort tracks by their position
             const sortedTracks = _.sortBy(releaseTracks, "position");
 
-            // Note: Only using a single artist credit
+            // NOTE: Only checking a single artist credit
             const artistCredit = data["artist-credit"][0];
             const artistId = (artistCredit) ? artistCredit.artist.id : null;
 
-            // Backaway if no name or tracks are found
+            // Break out early if no realease name, artist, or tracks are found
             if (!releaseId || !releaseName || !releaseTracks.length || !artistId) {
                 return Promise.resolve(null);
             }

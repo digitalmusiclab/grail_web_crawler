@@ -1,8 +1,5 @@
 'use strict';
 
-const _ = require("lodash");
-
-
 /*
     MusicBrainz Release Crawl Seeder
 
@@ -37,7 +34,7 @@ const lineParser = (line) => {
 
     const attrs = line.split('\t');
 
-    let data = {
+    const data = {
         mr_release_id: attrs[0],
         mr_release_name: attrs[1],
         mr_release_cardinality: attrs[2],
@@ -45,14 +42,14 @@ const lineParser = (line) => {
         mr_artist_name: attrs[4],
         mb_release_id: attrs[5],
         mr_release_tracks: JSON.parse(attrs[6])
-    }
+    };
 
     if (data.mb_release_id) {
         return { namespace: "musicbrainz:release:id", data };
     }
 
     return { namespace: "musicbrainz:release:name", data };
-}
+};
 
 
 module.exports = { namespace, lineParser };

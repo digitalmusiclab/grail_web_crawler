@@ -2,7 +2,6 @@
 
 // Load dependencies
 const Sleep = rootRequire('lib/sleep');
-const Logger = rootRequire('lib/logger');
 const MusicBrainz = require('./../api');
 const RateLimiter = rootRequire('lib/rate-limiter').MusicBrainz;
 const MixRadioRelease = rootRequire('manifests/mixradio/models').Release;
@@ -31,8 +30,10 @@ const _ = require("lodash");
 
 exports = module.exports = function process(job, done) {
 
+    // Create MixRadio Release Object
     const mixradioRelease = new MixRadioRelease(job.data);
 
+    // Gather all known MixRadio Track Ids
     const mr_track_ids = _.map(mixradioRelease.tracks, "id");
 
     // Respect the rate limit before making the request
@@ -43,14 +44,19 @@ exports = module.exports = function process(job, done) {
             return done(error);
         }
 
+        // TODO: Find a better way of respecting rate limits while
+        // still allowing the worker to process other jobs
         Sleep(timeLeft)
         .then( () => {
+            // Query MusicBrainz Release API
             return MusicBrainz.Release.getById(job.data.mb_release_id);
         })
         .then( (musicbrainzRelease) => {
+            // Insert Release into Grail Release Table
             return updateGrailWithRelease(mixradioRelease, musicbrainzRelease);
         })
         .then( ([grail_release_ids, grail_artist_ids, trx]) => {
+            // Use new Grail Release and Artist IDs to create new Grail Tracks.
             return insertTrackIntoGrail(grail_release_ids, grail_artist_ids, mr_track_ids, trx);
         })
         .then( (result) => {
@@ -59,24 +65,23 @@ exports = module.exports = function process(job, done) {
         .catch( (error) => {
             return done(error);
         });
-
     });
 };
 
-
+/*  */
 const updateGrailWithRelease = (mr_release, mb_release) => {
     
     return new Promise( (resolve) => {
+        // Begin new database transaction
         return db.transaction(resolve);
     })
     .then( (trx) => {
-        
         const releasePromise = findAndUpdateOrCreateMusicBrainzRelease(mr_release, mb_release, trx);
         const artistPromise = findAndUpdateOrCreateMusicBrainzArtist(mr_release, mb_release, trx);
-        
+        // Return both promises and database transaction
         return Promise.all([releasePromise, artistPromise, trx]);
     });
-}
+};
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Release: Check / Update / Insert
@@ -165,11 +170,8 @@ const findAndUpdateOrCreateMusicBrainzArtist = (mr_release, mb_release, trx) => 
 */
 const insertTrackIntoGrail = (grail_release_ids, grail_artist_ids, mr_track_ids, trx) => {
 
-    console.log("grail_release_ids: ", grail_release_ids);
-    console.log("grail_artist_ids: ", grail_release_ids);
-
     // Create Unique Release Artist Pairs
-    let artistReleaseIdPairs = [];
+    const artistReleaseIdPairs = [];
     _.each(grail_release_ids, (grail_release_id) => {
         _.each(grail_artist_ids, (grail_artist_id) => {
             artistReleaseIdPairs.push({ grail_release_id, grail_artist_id });
@@ -190,14 +192,14 @@ const insertTrackIntoGrail = (grail_release_ids, grail_artist_ids, mr_track_ids,
         "mixradio_track_name",
         "mixradio_track_position",
         "msd_track_id"
-    ]
+    ];
 
     return trx("grail_track")
         .distinct(distinctTrackColumns)
         .whereIn('mixradio_track_id', mr_track_ids)
         .then( (distinctTracks) => {
 
-            let insertTracks = [];
+            const insertTracks = [];
             _.each(distinctTracks, (track) => {
                 _.each(artistReleaseIdPairs, (idPair) => {
                     insertTracks.push(_.merge(track, idPair));

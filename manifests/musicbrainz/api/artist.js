@@ -10,8 +10,6 @@ const sendRequest = function (parameters, callback) {
   
   request(parameters, (error, response, body) => {
 
-      //console.log(response.request.uri.href)
-
       if (error) {
         return callback(error);
       }
@@ -44,10 +42,10 @@ exports.getByName = (artistName, callback) => {
       fmt: 'json'
     },
     uri: "artist"
-  }
+  };
 
   return sendRequest(requestParams, callback);
-}
+};
 
 
 exports.getById = (id, callback) => {
@@ -60,7 +58,7 @@ exports.getById = (id, callback) => {
       fmt: 'json'
     },
     uri: `artist/${id}`
-  }
+  };
 
   return sendRequest(requestParams, callback);
 };
@@ -81,7 +79,7 @@ exports.getReleaseCardinalityById = (id, callback) => {
       fmt: 'json'
     },
     uri: `release`
-  }
+  };
 
   return sendRequest(requestParams, (error, data) => {
     if (error) {
@@ -107,7 +105,7 @@ exports.getArtistNameById = (id, callback) => {
       fmt: 'json'
     },
     uri: `artist/${id}`
-  }
+  };
 
   return sendRequest(requestParams, (error, data) => {
     if (error) {

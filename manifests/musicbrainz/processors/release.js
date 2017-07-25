@@ -240,8 +240,6 @@ const findAndUpdateOrCreateMusicBrainzArtist = (mr_release, mb_release, trx) => 
 */
 const insertTrackIntoGrail = (grail_release_ids, grail_artist_ids, mr_track_ids, trx) => {
 
-    console.log("inserting track into grail: ", mr_track_ids);
-
     // Create Unique Release Artist Pairs
     let artistReleaseIdPairs = [];
     _.each(grail_release_ids, (grail_release_id) => {
