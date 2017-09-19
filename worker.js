@@ -12,10 +12,32 @@ require("./lib/root-require")();
 const cluster = require('cluster');
 const JobQueue = rootRequire('lib/job-queue');
 const Logger = rootRequire('lib/logger');
+const shutdownTimeout = 10 * 1000;
 
 if (cluster.worker) {
   Logger.info('Worker process #%d loaded', cluster.worker.id);
 }
+
+// Thread shutdown procedure
+const shutdownProcedure = () => {
+    
+    Logger.info('Queue shutting down');
+    
+    JobQueue.shutdown(shutdownTimeout, (error) => {
+
+        if (error) {
+            Logger.error('Queue shutdown error: ', error);
+            process.exit(1);
+        }
+
+        process.exit(0);
+    });
+};
+
+
+// Process failure events
+process.on('SIGTERM', shutdownProcedure);
+process.on('SIGINT', shutdownProcedure);
 
 /**
  * Worker Processors
