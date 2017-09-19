@@ -44,9 +44,10 @@ const lineParser = (line) => {
         mr_release_tracks: JSON.parse(attrs[6])
     };
 
-    if (data.mb_release_id) {
-        return { namespace: "musicbrainz:release:id", data };
-    }
+    // NOTE: Force all release jobs to query by name
+    // if (data.mb_release_id) {
+    //     return { namespace: "musicbrainz:release:id", data };
+    // }
 
     return { namespace: "musicbrainz:release:name", data };
 };

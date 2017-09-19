@@ -69,9 +69,18 @@ if (!fs.existsSync(loaderPath)) {
 const loader = require(loaderPath);
 
 // Job Seed Counts
-let totalJobCount = 0;
+let lineCount = 0;
 let errorJobCount = 0;
 let dispatchedJobCount = 0;
+
+const printSeederSummary = () => {
+    Logger.info('----------------------------------------');
+    Logger.info('seeder.report: Seeder Summary');
+    Logger.info('seeder.report: %d Lines Read', lineCount);
+    Logger.info('seeder.report: %d Jobs With Errors', errorJobCount);
+    Logger.info('seeder.report: %d Jobs Dispatched', dispatchedJobCount);
+    Logger.info('----------------------------------------');
+};
 
 // File Reader
 const reader = new LineReader(options.data, { 
@@ -83,41 +92,65 @@ const reader = new LineReader(options.data, {
 // Parse each album separately and dispatch a crawl job
 reader.on('line', (line) => {
 
+    // Pause line reader while parsing the line
+    reader.pause();
+
     // Increment Total Job Count
-    totalJobCount += 1;
+    lineCount += 1;
 
     let jobMetadata = null;
     
     try {
         jobMetadata = loader.lineParser(line);
-    } 
+    }
     catch (error) {
         // Logger.error('seeder.line.error: ', error);
         errorJobCount += 1;
+        reader.resume();
         return;
     }
 
-    // Dispatch Single Job
-    if (jobMetadata.constructor === Object) {
-        Dispatch.dispatchCrawlJob(jobMetadata);
-        dispatchedJobCount += 1;
-    }
-    
-    // Dispatch Multiple Jobs
-    if (jobMetadata.constructor === Array) {
-        jobMetadata.forEach(Dispatch.dispatchCrawlJob);
-        dispatchedJobCount += jobMetadata.length;
+    // LineParser says we should skip some lines
+    // indicating some data is missing from seed
+    if (jobMetadata === undefined) {
+        errorJobCount += 1;
+        reader.resume();
+        return;
     }
 
-    // Print summary every 10k lines
-    if (totalJobCount % 10000 === 0) {
-        Logger.info('----------------------------------------');
-        Logger.info('seeder.report: Shutdown Report');
-        Logger.info('seeder.report: %d Jobs Read', totalJobCount);
-        Logger.info('seeder.report: %d Jobs With Parsing Errors', errorJobCount);
-        Logger.info('seeder.report: %d Jobs Dispatched', dispatchedJobCount);
-        Logger.info('----------------------------------------');
-    } 
+    // Dispatch job metadata to the job queue
+    Promise.resolve()
+    .then( () => {
+        
+        // Dispatch Single Job
+        if (jobMetadata.constructor === Object) {
+            return Promise.all([Dispatch.dispatchCrawlJobPromise(jobMetadata)]);
+        }
+
+        // Dispatch Multiple Jobs
+        if (jobMetadata.constructor === Array) {
+            return Promise.all(_.map(jobMetadata, Dispatch.dispatchCrawlJobPromise));
+        }
+
+        // Default case, returns an empty array
+        return Promise.resolve([]);
+    })
+    .then( (dispatchedJobIds) => {
+        dispatchedJobCount += dispatchedJobIds.length;
+    })
+    .catch( (error) => {
+        Logger.error('seeder.dispatch.error: ', error);
+    })
+    .then( () => {
+        
+        // Print summary every 10k lines
+        if (lineCount % 10000 === 0) {
+            printSeederSummary();
+        }
+
+        // Resume reading lines
+        reader.resume();
+    });
 });
 
 // Problem reading the data file, exit with an error
@@ -128,9 +161,6 @@ reader.on('error', (error) => {
 
 // Finished reading seed file, print summary.
 reader.on('end', () => {
-    Logger.info('seeder.shutdown: Shutdown Summary');
-    Logger.info('seeder.shutdown: %d Jobs Read', totalJobCount);
-    Logger.info('seeder.shutdown: %d Jobs With Parsing Errors', errorJobCount);
-    Logger.info('seeder.shutdown: %d Jobs Dispatched', dispatchedJobCount);
+    printSeederSummary();
     process.exit(0);
 });
