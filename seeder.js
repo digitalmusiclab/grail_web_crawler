@@ -83,7 +83,7 @@ const printSeederSummary = () => {
 };
 
 // File Reader
-const reader = new LineReader(options.data, { 
+const reader = new LineReader(options.data, {
     encoding: 'utf8',
     skipEmptyLines: true
 });
@@ -99,7 +99,7 @@ reader.on('line', (line) => {
     lineCount += 1;
 
     let jobMetadata = null;
-    
+
     try {
         jobMetadata = loader.lineParser(line);
     }
@@ -121,7 +121,7 @@ reader.on('line', (line) => {
     // Dispatch job metadata to the job queue
     Promise.resolve()
     .then( () => {
-        
+
         // Dispatch Single Job
         if (jobMetadata.constructor === Object) {
             return Promise.all([Dispatch.dispatchCrawlJobPromise(jobMetadata)]);
@@ -142,11 +142,17 @@ reader.on('line', (line) => {
         Logger.error('seeder.dispatch.error: ', error);
     })
     .then( () => {
-        
+
         // Print summary every 10k lines
         if (lineCount % 10000 === 0) {
             printSeederSummary();
         }
+
+	// End seed after 4 jobs successfully loaded
+      	if (dispatchedJobCount === 4) {
+      		printSeederSummary();
+      		process.exit(0);
+      	}
 
         // Resume reading lines
         reader.resume();

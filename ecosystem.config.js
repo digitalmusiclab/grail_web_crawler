@@ -1,5 +1,5 @@
 module.exports = {
-    
+
 
     /**
      * PM2 Application Configuration
@@ -13,7 +13,7 @@ module.exports = {
             "exec_mode"     : "fork",
             "watch"         : false,
             "env"           : { "NODE_ENV": "development" },
-            "env_production": { "NODE_ENV": "production"  }
+            "env_production": { "NODE_ENV": "production" }
         },
         {
             "name"          : "grail-worker",
@@ -22,7 +22,7 @@ module.exports = {
             "exec_mode"     : "fork",
             "watch"         : false,
             "env"           : { "NODE_ENV": "development" },
-            "env_production": { "NODE_ENV": "production"  }
+            "env_production": { "NODE_ENV": "production" }
         }
     ],
     /**
@@ -42,4 +42,4 @@ module.exports = {
             "post-deploy"   : "npm install && pm2 startOrGracefulReload ecosystem.config.js --env production"
         }
     }
-}
+};

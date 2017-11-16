@@ -1,7 +1,6 @@
 'use strict';
 
 // Load dependencies
-const Logger = rootRequire('lib/logger');
 const MusicBrainz = require('./../api');
 const RateLimiter = rootRequire('lib/rate-limiter').MusicBrainz;
 const MixRadioRelease = rootRequire('manifests/mixradio/models').Release;
@@ -41,7 +40,7 @@ exports = module.exports = function process(job, done) {
 
         // Send Request To MusicBrainz API
         const sendRequest = function () {
-            
+
             getMusicBrainzReleases(job.data)
             .then( (data) => {
                 return parseReleaseData(data);
@@ -55,7 +54,7 @@ exports = module.exports = function process(job, done) {
             .catch( (error) => {
                 return done(error);
             });
-        }
+        };
 
 
         // Respect the rate limit before making the request
@@ -69,13 +68,13 @@ exports = module.exports = function process(job, done) {
 
 /* Returns a promise to fetch MusicBrainz release data */
 const getMusicBrainzReleases = (data) => {
-    
+
     if (data.mb_release_id) {
         return MusicBrainz.Release.getById(data.mb_release_id);
     }
 
     return getReleaseByName(data.mr_release_name, data.mr_artist_name);
-}
+};
 
 
 /* Parse Musicbrainz Release(s) into an Array of releases  */
@@ -84,17 +83,17 @@ const parseReleaseData = (releaseData) => {
     if (!releaseData) {
         return Promise.reject(null);
     }
-    
+
     if (releaseData.constructor === Array) {
         return Promise.resolve(releaseData);
     }
 
-    if (releaseData.constructor == Object) {
+    if (releaseData.constructor === Object) {
         return Promise.resolve([releaseData]);
     }
 
     return Promise.reject(new Error("MusicBrainz Release Data: Incorrect Data Type. Must be Array or Object"));
-}
+};
 
 
 /* Sequentially update Grail with returned MusicBrainz Releases */
@@ -105,21 +104,21 @@ const updateGrailWithReleases = (mr_release, musicbrainz_releases) => {
     _.each(musicbrainz_releases, (mb_release) => {
 
         promise = promise.then( () => {
-            return updateGrailWithRelease(mr_release, mb_release)
+            return updateGrailWithRelease(mr_release, mb_release);
         });
 
     });
 
     return promise;
-}
+};
 
 
 const updateGrailWithRelease = (mr_release, mb_release) => {
-    
+
     // Start database transaction
     return db.transaction( (trx) => {
 
-        const releasePromise = findAndUpdateOrCreateMusicBrainzRelease(mr_release, mb_release, trx);        
+        const releasePromise = findAndUpdateOrCreateMusicBrainzRelease(mr_release, mb_release, trx);
         const artistPromise = findAndUpdateOrCreateMusicBrainzArtist(mr_release, mb_release, trx);
 
         return Promise.all([releasePromise, artistPromise])
@@ -127,8 +126,8 @@ const updateGrailWithRelease = (mr_release, mb_release) => {
                 const mr_track_ids = _.map(mr_release.tracks, "id");
                 return insertTrackIntoGrail(grail_release_ids, grail_artist_ids, mr_track_ids, trx);
             });
-    });   
-}
+    });
+};
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -150,7 +149,7 @@ const getReleaseByName = (releaseName, artistName) => {
 
             return Promise.all(releasePromises);
         });
-}
+};
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -179,7 +178,7 @@ const findAndUpdateOrCreateMusicBrainzRelease = (mr_release, mb_release, trx) =>
     };
 
     return QueryHelper.findAndUpdateorCreateGrailEntity(queryParams, trx);
-}
+};
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -193,7 +192,7 @@ const findAndUpdateOrCreateMusicBrainzArtist = (mr_release, mb_release, trx) => 
         grail_table_unique_attribute: "grail_artist_id",
         grail_constraint_attribute: "mixradio_artist_id",
         grail_constraint_value: mr_release.artist_id,
-        new_attributes: { 
+        new_attributes: {
             musicbrainz_artist_id: mb_release.artist_id
         },
         find_constraint_attribute: "musicbrainz_artist_id",
@@ -223,14 +222,14 @@ const findAndUpdateOrCreateMusicBrainzArtist = (mr_release, mb_release, trx) => 
     };
 
     return QueryHelper.findAndUpdateorCreateGrailEntity(queryParams, trx);
-}
+};
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Track: Insert
 //////////////////////////////////////////////////////////////////////////////////////////
 
-/*  
+/*
     If a new artist or release inserted, we must insert into Grail Track with the new grail ids for artist, and release
     for all tracks with the original mixradio_release_id used to crawl.
 
@@ -241,7 +240,7 @@ const findAndUpdateOrCreateMusicBrainzArtist = (mr_release, mb_release, trx) => 
 const insertTrackIntoGrail = (grail_release_ids, grail_artist_ids, mr_track_ids, trx) => {
 
     // Create Unique Release Artist Pairs
-    let artistReleaseIdPairs = [];
+    const artistReleaseIdPairs = [];
     _.each(grail_release_ids, (grail_release_id) => {
         _.each(grail_artist_ids, (grail_artist_id) => {
             artistReleaseIdPairs.push({ grail_release_id, grail_artist_id });
@@ -262,14 +261,14 @@ const insertTrackIntoGrail = (grail_release_ids, grail_artist_ids, mr_track_ids,
         "mixradio_track_name",
         "mixradio_track_position",
         "msd_track_id"
-    ]
+    ];
 
     return trx("grail_track")
         .distinct(distinctTrackColumns)
         .whereIn('mixradio_track_id', mr_track_ids)
         .then( (distinctTracks) => {
 
-            let insertTracks = [];
+            const insertTracks = [];
             _.each(distinctTracks, (track) => {
                 _.each(artistReleaseIdPairs, (idPair) => {
                     insertTracks.push(_.merge(track, idPair));
@@ -282,4 +281,4 @@ const insertTrackIntoGrail = (grail_release_ids, grail_artist_ids, mr_track_ids,
             const chunkSize = newTracks.length;
             return trx.batchInsert('grail_track', newTracks, chunkSize);
         });
-}
+};
