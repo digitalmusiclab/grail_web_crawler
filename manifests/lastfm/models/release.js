@@ -14,5 +14,5 @@ exports = module.exports = class LastFmAlbum {
    * Constructs an instance of `SpotifyAlbum`.
    * @param {string} data.tracks[].name - Name of the track
    */
-  constructor(data) {}
+  constructor(data) {};
 };

@@ -11,9 +11,9 @@ const _ = require("lodash");
 /*
     MusicBrainz Track Crawl Seeder
 
-    Executes seeder query and dispatches crawl jobs to the job queue. 
+    Executes seeder query and dispatches crawl jobs to the job queue.
     Job processors will use MusicBrainz Track ID or MusicBrainz Release
-    ID or MixRadio Track and Release and Artist Name to query the 
+    ID or MixRadio Track and Release and Artist Name to query the
     MusicBrainz Track API.
 
     Job Data = {
@@ -31,9 +31,9 @@ const _ = require("lodash");
 exports = module.exports = function process(job, done) {
 
 
-    const { mr_track_id, mr_track_name, mr_artist_name, mb_track_id } = job.data;
+    const { mr_track_id, mr_track_name, mr_artist_name } = job.data;
 
-    
+
     RateLimiter(process.pid, (error, timeLeft) => {
 
         // Rate limiter reported an error, exit immediately
@@ -62,10 +62,10 @@ exports = module.exports = function process(job, done) {
                         return done(null);
                     })
                     .catch( (error) => {
-                        return done(error)
+                        return done(error);
                     });
             });
-        }
+        };
 
 
         // Respect the rate limit before making the request
@@ -89,7 +89,7 @@ const updateGrailWithTracks = (mr_track_id, tracks, callback) => {
     });
 
     return promise;
-}
+};
 
 
 const updateGrailTrack = (mr_track_id, track) => {
@@ -106,8 +106,8 @@ const updateGrailTrack = (mr_track_id, track) => {
 
             Logger.info('musicbrainz.track.insert: ', track);
             return insertRelease(mr_track_id, track.id, criteria);
-        })
-}
+        });
+};
 
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -120,7 +120,7 @@ const checkTrackCount = (mixradio_track_id, musicbrainz_track_id) => {
         .whereNotNull('musicbrainz_track_id')
         .where('mixradio_track_id', mixradio_track_id)
         .count("*");
-}
+};
 
 
 const updateRelease = (mixradio_track_id, musicbrainz_track_id, musicbrainz_track_criteria) => {
@@ -128,7 +128,7 @@ const updateRelease = (mixradio_track_id, musicbrainz_track_id, musicbrainz_trac
         .where("mixradio_track_id", mixradio_track_id)
         .update("musicbrainz_track_id", musicbrainz_track_id)
         .update("musicbrainz_track_criteria", JSON.stringify(musicbrainz_track_criteria));
-}
+};
 
 
 const insertRelease = (mixradio_track_id, musicbrainz_track_id, musicbrainz_track_criteria) => {
@@ -136,11 +136,11 @@ const insertRelease = (mixradio_track_id, musicbrainz_track_id, musicbrainz_trac
     const criteraJsonString = JSON.stringify(musicbrainz_track_criteria);
 
     const sql = `
-    INSERT INTO grail_track(musicbrainz_track_id,musicbrainz_track_criteria,grail_artist_id,grail_release_id,isrc,spotify_track_id,spotify_track_name,spotify_track_criteria,echonest_track_id,lyricfind_US_track_id,musixmatch_track,mixradio_track_id,mixradio_track_name,mixradio_track_position,msd_track_id,lastfm_track_id,lastfm_track_criteria) 
-    SELECT DISTINCT "${musicbrainz_track_id}","${criteraJsonString}",grail_artist_id,grail_release_id,isrc,spotify_track_id,spotify_track_name,spotify_track_criteria,echonest_track_id,lyricfind_US_track_id,musixmatch_track,mixradio_track_id,mixradio_track_name,mixradio_track_position,msd_track_id,lastfm_track_id,lastfm_track_criteria 
-    FROM grail.grail_track 
+    INSERT INTO grail_track(musicbrainz_track_id,musicbrainz_track_criteria,grail_artist_id,grail_release_id,isrc,spotify_track_id,spotify_track_name,spotify_track_criteria,echonest_track_id,lyricfind_US_track_id,musixmatch_track,mixradio_track_id,mixradio_track_name,mixradio_track_position,msd_track_id,lastfm_track_id,lastfm_track_criteria)
+    SELECT DISTINCT "${musicbrainz_track_id}","${criteraJsonString}",grail_artist_id,grail_release_id,isrc,spotify_track_id,spotify_track_name,spotify_track_criteria,echonest_track_id,lyricfind_US_track_id,musixmatch_track,mixradio_track_id,mixradio_track_name,mixradio_track_position,msd_track_id,lastfm_track_id,lastfm_track_criteria
+    FROM grail.grail_track
     WHERE mixradio_track_id = "${mixradio_track_id}";
-    `
-    
+    `;
+
     return db.raw(sql);
-}
+};

@@ -13,10 +13,10 @@ const StringSimilarity = require('string-similarity');
 */
 exports.stringDistance = (str1, str2) => {
     return StringSimilarity.compareTwoStrings(str1, str2).toFixed(4);
-}
+};
 
 exports.average = (arr) => {
     const sum = arr.reduce((acc, val) => acc + parseFloat(val), 0);
     const average = (sum / arr.length);
     return average.toFixed(4);
-}
+};

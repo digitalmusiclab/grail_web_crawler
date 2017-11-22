@@ -40,7 +40,6 @@ exports = module.exports = function process(job, done) {
             return MusicBrainz.Release.getByName(job.data.mr_release_name, job.data.mr_artist_name);
         })
         .then( (musicbrainzReleases) => {
-		console.log(musicbrainzReleases);
             return dispatchReleaseByIdJobsFor(job.data, musicbrainzReleases);
         })
         .then( (result) => {

@@ -148,11 +148,11 @@ reader.on('line', (line) => {
             printSeederSummary();
         }
 
-	// End seed after 4 jobs successfully loaded
-      	if (dispatchedJobCount === 4) {
-      		printSeederSummary();
-      		process.exit(0);
-      	}
+	// // End seed after 4 jobs successfully loaded
+  //     	if (dispatchedJobCount === 4) {
+  //     		printSeederSummary();
+  //     		process.exit(0);
+  //     	}
 
         // Resume reading lines
         reader.resume();

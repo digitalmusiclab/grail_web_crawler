@@ -20,10 +20,10 @@ const _ = require("lodash");
 */
 exports = module.exports = function process(job, done) {
 
-    const { sp_artist_id } = job.data
+    const { sp_artist_id } = job.data;
 
     const mr_artist = new MixRadioArtist(job.data);
-    
+
 
     RateLimiter(process.pid, (error, timeLeft) => {
 
@@ -43,7 +43,7 @@ exports = module.exports = function process(job, done) {
             .catch( (error) => {
                 return done(error);
             });
-        }
+        };
 
         // Respect the rate limit before making the request
         const time = Number.parseInt(timeLeft, 10);
@@ -65,4 +65,4 @@ const updateGrailArtist = (mr_artist, sp_artist) => {
             spotify_artist_name: sp_artist.name,
             spotify_artist_criteria: JSON.stringify(criteriaScore)
         });
-}
+};

@@ -17,7 +17,7 @@ const _ = require("lodash");
         mr_release_name: "12345",
         mr_release_cardinality: 12,
         mr_release_tracks: [{
-            "mr_track_id": "12342", 
+            "mr_track_id": "12342",
             "mr_track_name": "Sabotage",
             "mr_track_position": "5"
         }]
@@ -48,7 +48,7 @@ exports = module.exports = function process(job, done) {
             .catch( (error) => {
                 return done(error);
             });
-        }
+        };
 
         // Respect the rate limit before making the request
         const time = Number.parseInt(timeLeft, 10);
@@ -69,4 +69,4 @@ const updateGrailRelease = (mr_release, sp_release) => {
         .where('mixradio_release_id', mr_release.id)
         .andWhere('spotify_release_id', sp_release.id)
         .update({ spotify_release_criteria });
-} 
+};

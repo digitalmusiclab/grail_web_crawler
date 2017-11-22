@@ -7,7 +7,7 @@ const headers = require('./headers');
 
 
 const sendRequest = function (parameters, callback) {
-  
+
   request(parameters, (error, response, body) => {
 
       if (error) {
@@ -15,10 +15,10 @@ const sendRequest = function (parameters, callback) {
       }
 
       let data = null;
-      
+
       try {
         data = JSON.parse(body);
-      } 
+      }
       catch (error) {
         return callback(error);
       }
@@ -26,10 +26,10 @@ const sendRequest = function (parameters, callback) {
       if (data.error) {
         return callback(data.error);
       }
-      
+
       return callback(null, data);
   });
-}
+};
 
 
 exports.getByName = (artistName, callback) => {
@@ -49,11 +49,11 @@ exports.getByName = (artistName, callback) => {
 
 
 exports.getById = (id, callback) => {
-  
+
   const requestParams = {
     baseUrl,
     headers,
-    qs: { 
+    qs: {
       inc: 'recordings',
       fmt: 'json'
     },
@@ -70,11 +70,11 @@ exports.getById = (id, callback) => {
 exports.getReleaseCardinalityById = (id, callback) => {
 
   // http://musicbrainz.org/ws/2/release?artist=0383dadf-2a4e-4d10-a46a-e9e041da8eb3&fmt=json
-  
+
   const requestParams = {
     baseUrl,
     headers,
-    qs: { 
+    qs: {
       artist: id,
       fmt: 'json'
     },
@@ -83,7 +83,7 @@ exports.getReleaseCardinalityById = (id, callback) => {
 
   return sendRequest(requestParams, (error, data) => {
     if (error) {
-      return callback(error)
+      return callback(error);
     }
 
     return callback(null, data["release-count"]);
@@ -97,7 +97,7 @@ exports.getReleaseCardinalityById = (id, callback) => {
 exports.getArtistNameById = (id, callback) => {
 
   // http://musicbrainz.org/ws/2/artist/0383dadf-2a4e-4d10-a46a-e9e041da8eb3?fmt=json
-  
+
   const requestParams = {
     baseUrl,
     headers,

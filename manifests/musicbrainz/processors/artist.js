@@ -18,8 +18,8 @@ const RateLimiter = rootRequire('lib/rate-limiter').MusicBrainz;
 
 exports = module.exports = function process(job, done) {
 
-    const { mb_artist_id, mr_artist_name, mr_artist_id, cardinality } = job.data;
-    
+    const { mb_artist_id, mr_artist_id } = job.data;
+
     RateLimiter(process.pid, (error, timeLeft) => {
 
         // Rate limiter reported an error, exit immediately
@@ -28,7 +28,7 @@ exports = module.exports = function process(job, done) {
         }
 
         // Send Request To MusicBrainz API
-        const sendRequest = function () {
+        const sendRequest = function() {
 
             if (!mb_artist_id) {
                 return done();
@@ -45,7 +45,7 @@ exports = module.exports = function process(job, done) {
                 return checkArtistCount(mr_artist_id, mb_artist_id);
             })
             .then( (artistCount) => {
-                if (artistCount == 0) {
+                if (artistCount === 0) {
                     return updateArtist(mr_artist_id, mb_artist.id, mb_artist_criteria);
                 }
 
@@ -56,8 +56,8 @@ exports = module.exports = function process(job, done) {
             })
             .catch( (error) => {
                 return done(error);
-            });            
-        }
+            });
+        };
 
 
         // Respect the rate limit before making the request
@@ -77,13 +77,13 @@ const getArtistInfoById = (artistId) => {
     const artistCardinality = getReleaseCardinalityById(artistId);
 
     return Promise.all([artistName, artistCardinality]);
-}
+};
 
 
 
 // Promise Wrapper For MusicBrainz Artist Release Cardinality API
 const getReleaseCardinalityById = (artistId) => {
-    
+
     return new Promise( (resolve, reject) => {
 
         MusicBrainz.Artist.getReleaseCardinalityById(artistId, (err, cardinality) => {
@@ -92,20 +92,20 @@ const getReleaseCardinalityById = (artistId) => {
                 return reject(err);
             }
 
-            if (cardinality == undefined) {
+            if (cardinality === undefined) {
                 return reject(new Error("musicbrainz.artist: cardinality not found"));
-            } 
+            }
 
             return resolve(cardinality);
         });
     });
-}
+};
 
 
 // Promise Wrapper For MusicBrainz Artist Name API
 
 const getArtistNameById = (artistId) => {
-    
+
     return new Promise( (resolve, reject) => {
 
         MusicBrainz.Artist.getArtistNameById(artistId, (err, artistName) => {
@@ -121,7 +121,7 @@ const getArtistNameById = (artistId) => {
             return resolve(artistName);
         });
     });
-}
+};
 
 
 
@@ -133,14 +133,14 @@ const checkArtistCount = (mixradio_artist_id, musicbrainz_artist_id) => {
         .whereNot('musicbrainz_artist_id', musicbrainz_artist_id)
         .where('mixradio_artist_id', mixradio_artist_id)
         .count("*");
-}
+};
 
 const updateArtist = (mixradio_artist_id, musicbrainz_artist_id, musicbrainz_artist_criteria) => {
     return knex('grail_artist')
         .where("mixradio_artist_id", mixradio_artist_id)
         .update("musicbrainz_artist_id", musicbrainz_artist_id)
         .update("musicbrainz_artist_criteria", JSON.stringify(musicbrainz_artist_criteria));
-}
+};
 
 
 const insertArtist = (mixradio_artist_id, musicbrainz_artist_id, musicbrainz_artist_criteria) => {
@@ -148,11 +148,11 @@ const insertArtist = (mixradio_artist_id, musicbrainz_artist_id, musicbrainz_art
     const criteraJsonString = JSON.stringify(musicbrainz_artist_criteria);
 
     const sql = `
-    INSERT INTO grail_artist(musicbrainz_artist_id,musicbrainz_artist_criteria,spotify_artist_id,spotify_artist_name,spotify_artist_criteria,facebook_artist_id,digital7_US_artist_id,digital7_UK_artist_id,digital7_AU_artist_id,openaura_artist_id,musixmatch_WW_artist_id,jambase_artist_id,fma_artist_id,seatgeek_artist_id,seatwave_artist_id,lyricfind_US_artist_id,rdio_artist_id,echonest_artist_id,twitter_artist_id,tumblr_artist_id,mixradio_artist_id,mixradio_artist_name,mixradio_artist_cardinality,lastfm_artist_id,lastfm_artist_criteria) 
-    SELECT DISTINCT "${musicbrainz_artist_id}","${criteraJsonString}",spotify_artist_id,spotify_artist_name,spotify_artist_criteria,facebook_artist_id,digital7_US_artist_id,digital7_UK_artist_id,digital7_AU_artist_id,openaura_artist_id,musixmatch_WW_artist_id,jambase_artist_id,fma_artist_id,seatgeek_artist_id,seatwave_artist_id,lyricfind_US_artist_id,rdio_artist_id,echonest_artist_id,twitter_artist_id,tumblr_artist_id,mixradio_artist_id,mixradio_artist_name,mixradio_artist_cardinality,lastfm_artist_id,lastfm_artist_criteria 
-    FROM grail.grail_artist 
+    INSERT INTO grail_artist(musicbrainz_artist_id,musicbrainz_artist_criteria,spotify_artist_id,spotify_artist_name,spotify_artist_criteria,facebook_artist_id,digital7_US_artist_id,digital7_UK_artist_id,digital7_AU_artist_id,openaura_artist_id,musixmatch_WW_artist_id,jambase_artist_id,fma_artist_id,seatgeek_artist_id,seatwave_artist_id,lyricfind_US_artist_id,rdio_artist_id,echonest_artist_id,twitter_artist_id,tumblr_artist_id,mixradio_artist_id,mixradio_artist_name,mixradio_artist_cardinality,lastfm_artist_id,lastfm_artist_criteria)
+    SELECT DISTINCT "${musicbrainz_artist_id}","${criteraJsonString}",spotify_artist_id,spotify_artist_name,spotify_artist_criteria,facebook_artist_id,digital7_US_artist_id,digital7_UK_artist_id,digital7_AU_artist_id,openaura_artist_id,musixmatch_WW_artist_id,jambase_artist_id,fma_artist_id,seatgeek_artist_id,seatwave_artist_id,lyricfind_US_artist_id,rdio_artist_id,echonest_artist_id,twitter_artist_id,tumblr_artist_id,mixradio_artist_id,mixradio_artist_name,mixradio_artist_cardinality,lastfm_artist_id,lastfm_artist_criteria
+    FROM grail.grail_artist
     WHERE mixradio_artist_id = ${mixradio_artist_id};
-    `
-    
+    `;
+
     return knex.raw(sql);
-}
+};

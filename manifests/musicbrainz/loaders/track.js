@@ -6,9 +6,9 @@ const _ = require("lodash");
 /*
     MusicBrainz Track Crawl Seeder
 
-    Executes seeder query and dispatches crawl jobs to the job queue. 
+    Executes seeder query and dispatches crawl jobs to the job queue.
     Job processors will use MusicBrainz Track ID or MusicBrainz Release
-    ID or MixRadio Track and Release and Artist Name to query the 
+    ID or MixRadio Track and Release and Artist Name to query the
     MusicBrainz Track API.
 
 
@@ -42,11 +42,11 @@ const lineParser = (line) => {
 
         const data = _.merge({ mr_track_id }, track);
 
-        return { namespace, data }
+        return { namespace, data };
     });
 
     return jobs;
-}
+};
 
 
 module.exports = { namespace, lineParser };

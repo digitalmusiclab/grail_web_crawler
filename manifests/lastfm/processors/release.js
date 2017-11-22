@@ -35,7 +35,7 @@ exports = module.exports = function process(job, done) {
     // Parse MixRadio Release from Job Data
     const mixradioRelease = new MixRadioRelease(job.data);
 
-    
+
     RateLimiter(process.pid, (error, timeLeft) => {
 
         if (error) {
@@ -46,7 +46,7 @@ exports = module.exports = function process(job, done) {
 
             LastFmApi.Release.getByMusicBrainzId(job.data.sp_realease_id)
             .then( (spotifyRelease) => {
-                return updateGrailRelease(mixradioRelease, spotifyRelease)
+                return updateGrailRelease(mixradioRelease, spotifyRelease);
             })
             .then( () => {
                 return done();
@@ -54,7 +54,7 @@ exports = module.exports = function process(job, done) {
             .catch( (error) => {
                 return done(error);
             });
-        }
+        };
 
 
         // Respect the rate limit before making the request
@@ -76,4 +76,4 @@ const updateGrailRelease = (mr_release, sp_release) => {
         .where('mixradio_release_id', mr_release.id)
         .andWhere('spotify_release_id', sp_release.id)
         .update({ spotify_release_criteria });
-} 
+};

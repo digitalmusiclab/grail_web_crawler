@@ -15,7 +15,7 @@ const _ = require("lodash");
     Job Data = {
         isrc: "123abc",
         tracks: [{
-            "mr_track_id": "12342", 
+            "mr_track_id": "12342",
             "mr_track_name": "Sabotage",
             "mr_track_position": "5",
             "mr_release_id": "12342",
@@ -28,7 +28,7 @@ exports = module.exports = function process(job, done) {
 
     const isrc = job.data.isrc;
     const mr_tracks = job.data.tracks;
-    
+
     RateLimiter(process.pid, (error, timeLeft) => {
 
         // Rate limiter reported an error, exit immediately
@@ -41,7 +41,7 @@ exports = module.exports = function process(job, done) {
 
             SpotifyApi.Track.getByIsrc(isrc)
             .then( (spotifyTracks) => {
-            
+
                 // Filter out tracks without atleast one artist
                 spotifyTracks = _.filter(spotifyTracks, track => (track.artists.length > 0));
 
@@ -73,7 +73,7 @@ exports = module.exports = function process(job, done) {
             .catch( (error) => {
                 return done(error);
             });
-        }
+        };
 
 
         // Respect the rate limit before making the request
@@ -96,7 +96,7 @@ const insertTracks = (mr_tracks, sp_tracks) => {
     // Spotify Track map, key'd by Spotify Track ID
     const spotifyTrackMapById = _.keyBy(sp_tracks, "id");
 
-    let promise = Promise.resolve();
+    const promise = Promise.resolve();
 
     // TODO: Split into individual db write jobs
     const insertTrackPromises = _.map(mr_tracks, (mixradioTrack) => {
@@ -106,7 +106,7 @@ const insertTracks = (mr_tracks, sp_tracks) => {
     });
 
     return Promise.all(insertTrackPromises);
-}
+};
 
 
 /* Insert a new Spotify Track into Grail Track and related tables */
@@ -114,23 +114,23 @@ const insertTrack = (mr_track, sp_track) => {
 
     // Start database transaction
     return db.transaction( (trx) => {
-        
+
         // Find and Update or Create new references in Grail Artists and Release Tables
-        const grailArtists  = findAndUpdateOrCreateSpotifyArtist(mr_track, sp_track, trx);
+        const grailArtists = findAndUpdateOrCreateSpotifyArtist(mr_track, sp_track, trx);
         const grailReleases = findAndUpdateOrCreateSpotifyRelease(mr_track, sp_track, trx);
 
         return Promise.all([grailArtists, grailReleases])
             .then( ([grail_artist_ids, grail_release_ids]) => {
                 return insertTrackIntoGrail(grail_artist_ids, grail_release_ids, mr_track, sp_track, trx);
             });
-    }); 
+    });
 
-}
+};
 
 
 /* Returns an promise of an array of grail_artist_ids */
 const findAndUpdateOrCreateSpotifyArtist = (mr_track, sp_track, trx) => {
-    
+
     const queryParams = {
         grail_table: "grail_artist",
         grail_table_unique_attribute: "grail_artist_id",
@@ -169,7 +169,7 @@ const findAndUpdateOrCreateSpotifyArtist = (mr_track, sp_track, trx) => {
     };
 
     return QueryHelper.findAndUpdateorCreate(queryParams, trx);
-}
+};
 
 /* Returns an promise of an array of grail_release_ids */
 const findAndUpdateOrCreateSpotifyRelease = (mr_track, sp_track, trx) => {
@@ -189,14 +189,14 @@ const findAndUpdateOrCreateSpotifyRelease = (mr_track, sp_track, trx) => {
             "musicbrainz_release_criteria",
             "lastfm_release_id",
             "lastfm_release_criteria",
-            "mixradio_release_id", 
-            "mixradio_release_name", 
+            "mixradio_release_id",
+            "mixradio_release_name",
             "mixradio_release_cardinality"
         ]
     };
-    
+
     return QueryHelper.findAndUpdateorCreate(queryParams, trx);
-}
+};
 
 /* Insert Spotify Track into Grail Track with newly inserted Grail Artist, and Release IDs */
 const insertTrackIntoGrail = (grail_artist_ids, grail_release_ids, mr_track, sp_track, trx) => {
@@ -218,14 +218,14 @@ const insertTrackIntoGrail = (grail_artist_ids, grail_release_ids, mr_track, sp_
         "msd_track_id",
         "lastfm_track_id",
         "lastfm_track_criteria",
-    ]
+    ];
 
     return trx("grail_track")
         .distinct(distinctColumns)
         .where('mixradio_track_id', mr_track.id)
         .then( (distinctTracks) => {
-            
-            let insertTracks = [];
+
+            const insertTracks = [];
 
             _.each(distinctTracks, (track) => {
                 _.each(grail_artist_ids, (grail_artist_id) => {
@@ -236,10 +236,10 @@ const insertTrackIntoGrail = (grail_artist_ids, grail_release_ids, mr_track, sp_
                             grail_release_id,
                             spotify_track_id: sp_track.id,
                             spotify_track_criteria: JSON.stringify(criteriaScore)
-                        }
+                        };
 
                         insertTracks.push(_.merge(track, newAttributes));
-                    })
+                    });
                 });
             });
 
@@ -249,7 +249,7 @@ const insertTrackIntoGrail = (grail_artist_ids, grail_release_ids, mr_track, sp_
             const chunkSize = newTracks.length;
             return trx.batchInsert('grail_track', newTracks, chunkSize);
         });
-}
+};
 
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -269,7 +269,7 @@ const updateTracks = (mr_tracks, sp_tracks) => {
     });
 
     return Promise.all(updateTrackPromises);
-}
+};
 
 
 const updateTrack = (mr_track, sp_track) => {
@@ -280,4 +280,4 @@ const updateTrack = (mr_track, sp_track) => {
     return db("grail_track")
         .where("spotify_track_id", sp_track.id)
         .update("spotify_track_criteria", criteriaJsonString);
-}
+};
