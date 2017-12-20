@@ -16,10 +16,10 @@ exports = module.exports = function getById(id) {
         const requestParams = {
             baseUrl,
             uri: `artists/${id}/albums`
-        }
+        };
 
         request(requestParams, (error, response, body) => {
-                
+
                 if (error) {
                     return reject(error);
                 }
@@ -27,7 +27,7 @@ exports = module.exports = function getById(id) {
                 let data = null;
                 try {
                     data = JSON.parse(body);
-                } 
+                }
                 catch (error) {
                     return reject(error);
                 }

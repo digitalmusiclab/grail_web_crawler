@@ -5,12 +5,12 @@ const _ = require("lodash");
 /*
     Spotify Artist Crawl Seeder
 
-    Executes seeder query and dispatches crawl jobs to the job queue. 
+    Executes seeder query and dispatches crawl jobs to the job queue.
     Job processors will use Spotify Artist ID or MixRadio Artist Name
     to query the MusicBrainz Artist API.
 
     Dependency: Spotify Artist ID retrieved via Spotify Track Crawl
-    
+
     sp_artist_id: "ABCEASYAS123",
     {
         mr_artist_id: "0000001",
@@ -36,11 +36,11 @@ const lineParser = (line) => {
     // Create Jobs for Each Track from Track JSON
     const jobs = _.map(mr_artists, (artist) => {
         const data = _.merge({ sp_artist_id }, artist);
-        return { namespace, data }
+        return { namespace, data };
     });
 
     return jobs;
-}
+};
 
 
 module.exports = { namespace, lineParser };

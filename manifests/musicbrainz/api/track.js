@@ -20,7 +20,7 @@ const sendRequest = function (parameters, callback) {
         let data = null;
         try {
             data = JSON.parse(body);
-        } 
+        }
         catch (error) {
             return callback(error);
         }
@@ -32,7 +32,7 @@ const sendRequest = function (parameters, callback) {
         return callback(null, data);
 
     });
-}
+};
 
 
 
@@ -41,15 +41,15 @@ exports.getByName = (trackName, artistName, callback) => {
     const requestParams = {
         baseUrl,
         headers,
-        qs: { 
+        qs: {
             query: `${trackName} AND artist:${artistName}`,
             fmt: 'json'
         },
         uri: "recording"
-    }
+    };
 
-    sendRequest(requestParams, function (error, data) {
-        
+    sendRequest(requestParams, function(error, data) {
+
         if (error) {
             return callback(error);
         }
@@ -61,7 +61,7 @@ exports.getByName = (trackName, artistName, callback) => {
 
         return callback(null, tracks);
     });
-}
+};
 
 
 exports.getById = (id, callback) => {
@@ -69,11 +69,11 @@ exports.getById = (id, callback) => {
     const requestParams = {
         baseUrl,
         headers,
-        qs: { 
+        qs: {
             fmt: 'json'
         },
         uri: `recording/${id}`
-    }
+    };
 
     return sendRequest(requestParams, callback);
 };

@@ -17,7 +17,7 @@ const Config = rootRequire('config');
 */
 module.getByMusicBrainzId = (musicbrainzReleaseId, musicbrainzArtistId) => {
 
-    const requestParams = { 
+    const requestParams = {
         baseUrl,
         qs: {
             api_key: Config.Keys.LastFm,
@@ -26,15 +26,15 @@ module.getByMusicBrainzId = (musicbrainzReleaseId, musicbrainzArtistId) => {
             artist: musicbrainzArtistId,
             album: musicbrainzReleaseId
         }
-    }
+    };
 
     return sendRequest(requestParams);
-}
+};
 
 
 module.getByName = (releaseName, artistName, callback) => {
-    
-    const requestParams = { 
+
+    const requestParams = {
         baseUrl,
         qs: {
             api_key: Config.Keys.LastFm,
@@ -43,8 +43,8 @@ module.getByName = (releaseName, artistName, callback) => {
             artist: artistName,
             album: releaseName
         }
-    }
-}
+    };
+};
 
 
 const sendRequest = function (parameters) {
@@ -60,7 +60,7 @@ const sendRequest = function (parameters) {
             let data = null;
             try {
                 data = JSON.parse(body);
-            } 
+            }
             catch (error) {
                 return reject(error);
             }
@@ -68,10 +68,10 @@ const sendRequest = function (parameters) {
             return resolve(data);
         });
     });
-}
+};
 
 const parseLastFmRelease = (data) => {
-        
+
     return new Promise( (resolve, reject) => {
 
         const items = data.items;
@@ -87,4 +87,4 @@ const parseLastFmRelease = (data) => {
 
         return spotifyTracks;
     });
-}
+};

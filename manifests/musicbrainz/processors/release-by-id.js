@@ -70,7 +70,7 @@ exports = module.exports = function process(job, done) {
 
 /*  */
 const updateGrailWithRelease = (mr_release, mb_release) => {
-    
+
     return new Promise( (resolve) => {
         // Begin new database transaction
         return db.transaction(resolve);
@@ -109,7 +109,7 @@ const findAndUpdateOrCreateMusicBrainzRelease = (mr_release, mb_release, trx) =>
     };
 
     return QueryHelper.findAndUpdateorCreateGrailEntity(queryParams, trx);
-}
+};
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -123,7 +123,7 @@ const findAndUpdateOrCreateMusicBrainzArtist = (mr_release, mb_release, trx) => 
         grail_table_unique_attribute: "grail_artist_id",
         grail_constraint_attribute: "mixradio_artist_id",
         grail_constraint_value: mr_release.artist_id,
-        new_attributes: { 
+        new_attributes: {
             musicbrainz_artist_id: mb_release.artist_id
         },
         find_constraint_attribute: "musicbrainz_artist_id",
@@ -153,15 +153,15 @@ const findAndUpdateOrCreateMusicBrainzArtist = (mr_release, mb_release, trx) => 
     };
 
     return QueryHelper.findAndUpdateorCreateGrailEntity(queryParams, trx);
-}
+};
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Track: Insert
 //////////////////////////////////////////////////////////////////////////////////////////
 
-/*  
-    If a new artist or release inserted, we must insert into Grail Track with the new grail 
+/*
+    If a new artist or release inserted, we must insert into Grail Track with the new grail
     ids for artist, and release for all tracks with the original mixradio_release_id used to crawl.
 
     @param { string } grail_release_ids - Grail Release IDs of inserted Releases

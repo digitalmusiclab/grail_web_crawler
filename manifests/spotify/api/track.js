@@ -18,7 +18,7 @@ exports.getByIsrc = (isrc) => {
             q: `isrc:${isrc}`
         },
         uri: `search`
-    }
+    };
 
     return sendRequest(requestParams).then(parseSpotifyTracksFromResponse);
 };
@@ -30,7 +30,7 @@ exports.getById = (id, callback) => {
     const requestParams = {
         baseUrl,
         uri: `tracks/${id}`
-    }
+    };
 
     return sendRequest(requestParams);
 };
@@ -51,7 +51,7 @@ const sendRequest = function (parameters) {
             let data = null;
             try {
                 data = JSON.parse(body);
-            } 
+            }
             catch (error) {
                 return reject(error);
             }
@@ -59,10 +59,10 @@ const sendRequest = function (parameters) {
             return resolve(data);
         });
     });
-}
+};
 
 const parseSpotifyTracksFromResponse = (data) => {
-    
+
     return new Promise( (resolve, reject) => {
 
         const items = data.tracks.items;
@@ -79,4 +79,4 @@ const parseSpotifyTracksFromResponse = (data) => {
 
         return resolve(spotifyTracks);
     });
-}
+};

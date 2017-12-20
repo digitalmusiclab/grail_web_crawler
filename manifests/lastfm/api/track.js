@@ -10,7 +10,7 @@ const Config = rootRequire('config');
 
 
 
-/* 
+/*
     Get LastFM Track By MusicBrainz Track and Artist ID
 
     @param { sting } musicbrainzTrackId
@@ -20,7 +20,7 @@ const Config = rootRequire('config');
 */
 exports.getByMusicBrainzId = (musicbrainzTrackId, musicbrainzArtistId) => {
 
-    const requestParams = { 
+    const requestParams = {
         baseUrl,
         qs: {
             api_key: Config.Keys.LastFm,
@@ -29,17 +29,17 @@ exports.getByMusicBrainzId = (musicbrainzTrackId, musicbrainzArtistId) => {
             artist: musicbrainzArtistId,
             track: musicbrainzTrackId
         }
-    }
+    };
 
     return sendRequest(requestParams);
-}
+};
 
 
 
 
 exports.getByName = (artistName, trackName, callback) => {
 
-    const requestParams = { 
+    const requestParams = {
         baseUrl,
         qs: {
             api_key: Config.Keys.LastFm,
@@ -48,8 +48,8 @@ exports.getByName = (artistName, trackName, callback) => {
             artist: artistName,
             track: trackName
         }
-    }
-}
+    };
+};
 
 
 
@@ -66,7 +66,7 @@ const sendRequest = function (parameters) {
             let data = null;
             try {
                 data = JSON.parse(body);
-            } 
+            }
             catch (error) {
                 return reject(error);
             }
@@ -74,10 +74,10 @@ const sendRequest = function (parameters) {
             return resolve(data);
         });
     });
-}
+};
 
 const parseLastFMTrack = (data) => {
-    
+
     return new Promise( (resolve, reject) => {
 
         const items = data.items;
@@ -93,4 +93,4 @@ const parseLastFMTrack = (data) => {
 
         return spotifyTracks;
     });
-}
+};

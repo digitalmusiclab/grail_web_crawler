@@ -15,10 +15,10 @@ exports = module.exports = class LastFmArtist {
 
   /**
    * Constructs an instance of `SpotifyAlbum`.
-   * 
+   *
    * @param {object} data - Payload from the Spotify API to convert into `SpotifyAlbum`
    * @param {string} data.tracks[].name - Name of the track
    */
-  constructor(data) {}
-  
+  constructor(data) {};
+
 };
